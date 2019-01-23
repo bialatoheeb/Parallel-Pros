@@ -1,5 +1,5 @@
 /*
- Authors: Toheeb Biala, Khem Narayan Poudel, Gabriel Toban
+ Authors: Toheeb A. Biala, Khem Narayan Poudel, Gabriel Toban
  This code reads in the data and sort (based on any desired coordinates) 
  using a variant of the quicksort  in the C standard library.
 */
