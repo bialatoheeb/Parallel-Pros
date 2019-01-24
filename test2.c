@@ -122,5 +122,6 @@ int main(int argc, char* argv[]){
       printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[i].num, array[i].x, array[i].y, array[i].z);    
   }
   MPI_Type_free(&array_type);
+  free(array);
   MPI_Finalize();
 }
