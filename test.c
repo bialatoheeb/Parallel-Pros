@@ -40,7 +40,8 @@ int main(int argc, char* argv[]){
   
   int num;
   FILE *fp;
-  int i;
+  int i, j, total=0, K=0;
+  int num_ranks;
   struct data_struct temp;
   
   if (argc != 3){
@@ -62,16 +63,47 @@ int main(int argc, char* argv[]){
     }
     fclose(fp);
   }
+  total = i;
+  num_ranks = 2;
+  
   
   for (i = 0; i < num ; i++)
     printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[i].num, array[i].x, array[i].y, array[i].z);
   
   
-   //qsort(array, num, sizeof(struct data_struct), compare_x);
+   qsort(array, num, sizeof(struct data_struct), compare_x);
    //qsort(array, num, sizeof(struct data_struct), compare_y);
-   qsort(array, num, sizeof(struct data_struct), compare_z);
+   //qsort(array, num, sizeof(struct data_struct), compare_z);
 
    for (i = 0; i < num ; i++)
      printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[i].num, array[i].x, array[i].y, array[i].z);
+
+   //Get N lower values + max
+  
+  long double L[num_ranks+1]; //lower limits and max
+  K = (int)(total/num_ranks);
+  j = 0;
+  L[num_ranks] = array[total-1].x; //array[0].x;
+  for(i=0;i<total;i++){
+    if (i%K == 0 && j<num_ranks){
+      L[j] = array[i].x;
+      printf("L[%u]: %0.14Lf\n", j,L[j]);
+      j++;
+      
+    }
+    //if (L[num_ranks] < array[i].x)
+    //  L[num_ranks] = array[i].x;
+    
+  }
+  printf("L[%u]: %0.14Lf\n", num_ranks,L[j]);
+      
+  printf("total: %u\n", total);
+  printf("    K: %u\n", K);
+  
+  printf("Lower Bounds and Max\n=======================\n\n");
+  for (i=0;i<num_ranks+1;i++)
+    printf("%0.15Lf\t", L[i]);
+  printf("\n");
+   
    
 }
