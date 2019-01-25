@@ -1,0 +1,11 @@
+
+!#/bin/bash
+
+
+#$ -N test2
+#$ -pe mpi 2
+#$ -q amd.q
+
+
+mpirun -np $NSLOTS $HOME/COMS7900/test2  100 $HOME/COMS7900/OutputFile.bin >  $HOME/COMS7900/output.txt
+

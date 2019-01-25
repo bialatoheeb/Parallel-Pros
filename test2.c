@@ -6,29 +6,43 @@
 #include "mpi.h"
 
 
+//struct data_struct{
+//  long int num;
+//  long double x;
+//  long double y;
+//  long double z;
+//};
+
 struct data_struct{
   long int num;
-  long double x;
-  long double y;
-  long double z;
+  long double xyz[3];
 };
 
-int compare_x(const void* s1, const void* s2){
+int compare_datastruct(const void* s1, const void* s2, int index){
   struct data_struct  *p1 = (struct data_struct *) s1;
   struct data_struct  *p2 = (struct data_struct *) s2;
-  return p1->x > p2->x;
+  return p1->xyz[index] > p2->xyz[index];
+}
+
+int compare_x(const void* s1, const void* s2){
+  //struct data_struct  *p1 = (struct data_struct *) s1;
+  //struct data_struct  *p2 = (struct data_struct *) s2;
+  //return p1->x > p2->x;
+  return compare_datastruct(s1, s2, 0);
 }
 
 int compare_y(const void* s1, const void* s2){
-  struct data_struct  *p1 = (struct data_struct *) s1;
-  struct data_struct  *p2 = (struct data_struct *) s2;
-  return p1->y > p2->y;
+  //struct data_struct  *p1 = (struct data_struct *) s1;
+  //struct data_struct  *p2 = (struct data_struct *) s2;
+  //return p1->y > p2->y;
+  return compare_datastruct(s1, s2, 1);
 }
 
 int compare_z(const void* s1, const void* s2){
-  struct data_struct  *p1 = (struct data_struct *) s1;
-  struct data_struct  *p2 = (struct data_struct *) s2;
-  return p1->z > p2->z;
+  //struct data_struct  *p1 = (struct data_struct *) s1;
+  //struct data_struct  *p2 = (struct data_struct *) s2;
+  //return p1->z > p2->z;
+  return compare_datastruct(s1, s2, 2);
 }
 
 
@@ -36,7 +50,7 @@ int main(int argc, char* argv[]){
   
   int num;
   FILE *fp;
-  int i, j, total=0, K=0;
+  int i, j, total=0, K=0, colIndex =0;
   int num_ranks;
   int my_rank;
   struct data_struct temp;
@@ -55,9 +69,13 @@ int main(int argc, char* argv[]){
 
   //Read in file and store in array
   i = 0;
-  if ((fp = fopen(argv[2], "r")) != NULL){
+  if ((fp = fopen(argv[2], "rb")) != NULL){
     while(!feof(fp) && i < num){
-      fscanf(fp, "%lu  %Lf  %Lf %Lf\n", &temp.num, &temp.x, &temp.y, &temp.z);
+      //fscanf(fp, "%lu  %Lf  %Lf %Lf\n", &temp.num,&temp.xyz[0], &temp.xyz[1], &temp.xyz[2]);
+      fread(&temp.num,sizeof(long int),1,fp);
+      fread(&temp.xyz[0],sizeof(long double),1,fp); 
+      fread(&temp.xyz[1],sizeof(long double),1,fp); 
+      fread(&temp.xyz[2],sizeof(long double),1,fp); 
       array[i++] = temp;
     }
     fclose(fp);
@@ -77,19 +95,26 @@ int main(int argc, char* argv[]){
   MPI_Aint displ[2], lower_bound, extent;
 
   //sort
-  //qsort(array, num, sizeof(struct data_struct), compare_x);
-  //qsort(array, num, sizeof(struct data_struct), compare_y);
-  qsort(array, num, sizeof(struct data_struct), compare_z);
-   
+  if (colIndex == 0)
+    qsort(array, num, sizeof(struct data_struct), compare_x);
+  else if (colIndex == 1)
+    qsort(array, num, sizeof(struct data_struct), compare_y);
+  else if (colIndex == 2)
+    qsort(array, num, sizeof(struct data_struct), compare_z);
+  else{
+    printf("colIndex is between 0 and 2\n");
+    exit(0);
+  }
+ 
   //Get N lower values + max
   
   long double L[num_ranks+1]; //lower limits and max
   K = (int)(total/num_ranks);
   j = 0;
-  L[num_ranks] = array[total-1].x; //array[0].x;
+  L[num_ranks] = array[total-1].xyz[colIndex]; //array[0].x;
   for(i=0;i<total;i++){
     if (i%K == 0 && j<num_ranks){
-      L[j] = array[i].x;
+      L[j] = array[i].xyz[colIndex];
       printf("L[%u]: %0.14Lf\n", j,L[j]);
       j++;
       
@@ -132,15 +157,15 @@ int main(int argc, char* argv[]){
     printf("\nArray before changes\n");
     printf("\n\n\n");
     for (i = 0; i < num; i++)
-      printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[i].num, array[i].x, array[i].y, array[i].z);
+      printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[i].num, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
   }
   
   if (my_rank == 0){
     // Change all my array entries as defined below
     for (i = 0; i < num; i++){
-      array[i].x = 1.0*i;
-      array[i].y = 2.0*i;
-      array[i].z = 3.0*i;
+      array[i].xyz[0] = 1.0*i;
+      array[i].xyz[1] = 2.0*i;
+      array[i].xyz[2] = 3.0*i;
     }
   
     // Send only index from 10 to 30
@@ -156,7 +181,7 @@ int main(int argc, char* argv[]){
   
     // Observe the change of array[10] to array[30] in the print below
     for (i = 0; i < num; i++)
-      printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[i].num, array[i].x, array[i].y, array[i].z);    
+      printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[i].num, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);    
   }
   MPI_Type_free(&array_type);
   free(array);
