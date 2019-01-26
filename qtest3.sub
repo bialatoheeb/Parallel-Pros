@@ -1,0 +1,10 @@
+!#/bin/bash
+
+
+#$ -N test3
+#$ -pe mpi 3
+#$ -q amd.q
+
+
+mpirun -np $NSLOTS $HOME/COMS7900/Parallel-Pros/test3  100 $HOME/COMS7900/Parallel-Pros/infile >  $HOME/COMS7900/Parallel-Pros/output.txt
+
