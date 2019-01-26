@@ -16,10 +16,8 @@ int main(int argc, char* argv[]){
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
      
   create_array_datatype();
- 
- 
+
   num = atoi(argv[1]); //number of elements on this node
-  total = num; //number of elements on all nodes
   
   // declare array of struct
   struct data_struct* array  = (struct data_struct *) malloc(num * sizeof(struct data_struct));
@@ -39,8 +37,6 @@ int main(int argc, char* argv[]){
     printf("colIndex is between 0 and 2\n");
     exit(0);
   }
-  //printFile(num, array);
-  printf("myrank = %d of %d\n", my_rank, num_ranks);
    
   // vars for lower bound
   long double* nodeL = (long double *) malloc((num_ranks+2)*sizeof(long double));
@@ -56,10 +52,11 @@ int main(int argc, char* argv[]){
   getL(nodeL, Linfo, L);
 
   // Change to the function Getcount to send/recv to/from all nodes
-  // Form here
+  // From here
   for (i=0;i < (num_ranks*num_ranks); i++)
     total_counts[i] = 50;
   // To here
+
   AllToAllSend(array, recv_array, total_counts);
 
   MPI_Type_free(&array_type);
