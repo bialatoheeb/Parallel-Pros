@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include "mpi.h"
 
 struct data_struct{
   long int num;
@@ -22,6 +23,8 @@ int compare_y(const void* s1, const void* s2);
 int compare_z(const void* s1, const void* s2);
 
 void getNodeL(const int nodes, const int total, const int colIndex, void* Lv, void* arrayv);
+void printNodeL(const int num_ranks, void* vL);
 
+void getL(int num_ranks, int my_rank, void * vnodeL, void * vLinfo, void * vL);
 
 #endif
