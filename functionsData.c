@@ -7,22 +7,13 @@ int compare_datastruct(const void* s1, const void* s2, int index){
 }
 
 int compare_x(const void* s1, const void* s2){
-  //struct data_struct  *p1 = (struct data_struct *) s1;
-  //struct data_struct  *p2 = (struct data_struct *) s2;
-  //return p1->x > p2->x;
   return compare_datastruct(s1, s2, 0);
 }
 
 int compare_y(const void* s1, const void* s2){
-  //struct data_struct  *p1 = (struct data_struct *) s1;
-  //struct data_struct  *p2 = (struct data_struct *) s2;
-  //return p1->y > p2->y;
   return compare_datastruct(s1, s2, 1);
 }
 
 int compare_z(const void* s1, const void* s2){
-  //struct data_struct  *p1 = (struct data_struct *) s1;
-  //struct data_struct  *p2 = (struct data_struct *) s2;
-  //return p1->z > p2->z;
   return compare_datastruct(s1, s2, 2);
 }

@@ -1,6 +1,6 @@
 #include "headerFuncs.h"
 
-void getL(int num_ranks, int my_rank, void * vnodeL, void * vLinfo, void * vL){
+void getL(void * vnodeL, void * vLinfo, void * vL){
   long double  *L = (long double *) vL;
   long double  *Linfo = (long double *) vLinfo;
   long double  *nodeL = (long double *) vnodeL;

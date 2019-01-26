@@ -12,19 +12,20 @@ struct data_struct{
   long double xyz[3];
 };
 
-void getArraySize(const char* fname, int* size);
-void readFromFile(const char* fname, const int size, void* array);
-void printFile( const int size, void* varray );
+int num_ranks;
+int my_rank;
+     
+void getArraySize(const char*, int*);
+void readFromFile(const char*, const int, void*);
+void printFile( const int, void*);
+int compare_datastruct(const void*, const void*, int);
+int compare_x(const void*, const void*);
+int compare_y(const void*, const void*);
+int compare_z(const void*, const void*);
 
+void getNodeL(const int, const int, void*, void*);
+void printNodeL(void*);
 
-int compare_datastruct(const void* s1, const void* s2, int index);
-int compare_x(const void* s1, const void* s2);
-int compare_y(const void* s1, const void* s2);
-int compare_z(const void* s1, const void* s2);
-
-void getNodeL(const int nodes, const int total, const int colIndex, void* Lv, void* arrayv);
-void printNodeL(const int num_ranks, void* vL);
-
-void getL(int num_ranks, int my_rank, void * vnodeL, void * vLinfo, void * vL);
-
+void getL(void *, void *, void *);
+void AllToAllSend(void *, void *, void *, MPI_Datatype);
 #endif

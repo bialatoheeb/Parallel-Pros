@@ -1,6 +1,6 @@
 #include "headerFuncs.h"
 
-void getNodeL(const int num_ranks, const int num, const int colIndex, void* vL, void* varray){
+void getNodeL(const int num, const int colIndex, void* vL, void* varray){
   struct data_struct  *array = (struct data_struct *) varray;
   long double  *L = (long double *) vL;
   int i, j=0, D;
@@ -21,7 +21,7 @@ void getNodeL(const int num_ranks, const int num, const int colIndex, void* vL, 
   
 }
 
-void printNodeL(const int num_ranks, void* vL){
+void printNodeL(void* vL){
   long double  *L = (long double *) vL;
   int i;
   for (i=0;i<num_ranks+2;i++)

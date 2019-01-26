@@ -38,6 +38,7 @@ int main(int argc, char* argv[]){
   
   // declare array of struct
   struct data_struct* array  = (struct data_struct *) malloc(num * sizeof(struct data_struct));
+  struct data_struct* recv_array;  // To be allocated after getting count
 
   // read from file
   readFromFile(argv[2], num, array);
@@ -58,16 +59,19 @@ int main(int argc, char* argv[]){
   
   // vars for lower bound
   long double* nodeL = (long double *) malloc((num_ranks+2)*sizeof(long double));
-  getNodeL(num_ranks, num, colIndex, nodeL, array);
-  printNodeL(num_ranks, nodeL);
+  getNodeL(num, colIndex, nodeL, array);
+  printNodeL(nodeL);
   
   //ALL TO ALL TO GET L
   long double* Linfo = (long double *) malloc(((num_ranks+2)*num_ranks)*sizeof(long double));
   long double* L = (long double *) malloc(((num_ranks)*num_ranks)*sizeof(long double));
-  
-  getL(num_ranks, my_rank, nodeL, Linfo, L);
-  
-  
+  int * total_counts = (int *) malloc(num_ranks * sizeof(int));
+
+  getL(nodeL, Linfo, L);
+  memset(total_counts, 1, sizeof(total_counts));
+  AllToAllSend(array, recv_array, total_counts, array_type);
+
+
   MPI_Type_free(&array_type);
   free(array);
   MPI_Finalize();
