@@ -1,19 +1,9 @@
 #include "headerFuncs.h"
-//#include "mpi.h"
 
 int main(int argc, char* argv[]){ 
   
   int num;
   int i, j, total=0, K=0, colIndex =0;
-  int num_ranks=2;
-  int my_rank;
-  int* send_counts;
-  int * send_displs;
-  int* recv_displs;
-  int* recv_counts;
-  int* rank_counts;
-  int total_recv_counts;
-  int rank_to_print = 2;  // Change to 0, 1 or 2
   
   
   if (argc != 3){
@@ -25,14 +15,9 @@ int main(int argc, char* argv[]){
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
      
-  MPI_Status status;
-  MPI_Datatype array_type, data_type[2];
-  int data_length[2];
-  MPI_Aint displ[2], lower_bound, extent;
+  create_array_datatype();
  
-  // Number of elements to work on
-  // getArraySize(const char* fname, int* size);
-  // for testing
+ 
   num = atoi(argv[1]); //number of elements on this node
   total = num; //number of elements on all nodes
   
@@ -42,7 +27,6 @@ int main(int argc, char* argv[]){
 
   // read from file
   readFromFile(argv[2], num, array);
-  //printFile(num, array);
 
   //sort
   if (colIndex == 0)
@@ -56,21 +40,27 @@ int main(int argc, char* argv[]){
     exit(0);
   }
   //printFile(num, array);
-  
+  printf("myrank = %d of %d\n", my_rank, num_ranks);
+   
   // vars for lower bound
   long double* nodeL = (long double *) malloc((num_ranks+2)*sizeof(long double));
+  
   getNodeL(num, colIndex, nodeL, array);
   printNodeL(nodeL);
-  
+ 
   //ALL TO ALL TO GET L
   long double* Linfo = (long double *) malloc(((num_ranks+2)*num_ranks)*sizeof(long double));
   long double* L = (long double *) malloc(((num_ranks)*num_ranks)*sizeof(long double));
-  int * total_counts = (int *) malloc(num_ranks * sizeof(int));
+  int * total_counts = (int *) malloc(num_ranks * num_ranks*sizeof(int));
 
   getL(nodeL, Linfo, L);
-  memset(total_counts, 1, sizeof(total_counts));
-  AllToAllSend(array, recv_array, total_counts, array_type);
 
+  // Change to the function Getcount to send/recv to/from all nodes
+  // Form here
+  for (i=0;i < (num_ranks*num_ranks); i++)
+    total_counts[i] = 50;
+  // To here
+  AllToAllSend(array, recv_array, total_counts);
 
   MPI_Type_free(&array_type);
   free(array);

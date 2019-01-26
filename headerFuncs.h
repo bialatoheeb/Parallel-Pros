@@ -12,6 +12,7 @@ struct data_struct{
   long double xyz[3];
 };
 
+MPI_Datatype array_type;
 int num_ranks;
 int my_rank;
      
@@ -22,10 +23,9 @@ int compare_datastruct(const void*, const void*, int);
 int compare_x(const void*, const void*);
 int compare_y(const void*, const void*);
 int compare_z(const void*, const void*);
-
-void getNodeL(const int, const int, void*, void*);
+void getNodeL(int, int, void*, void*);
 void printNodeL(void*);
-
 void getL(void *, void *, void *);
-void AllToAllSend(void *, void *, void *, MPI_Datatype);
+void AllToAllSend(void *, void *, void *);
+void create_array_datatype();
 #endif

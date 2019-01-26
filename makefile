@@ -1,5 +1,5 @@
 
-functions = main.o functionsFiles.o functionsData.o functionsSort.o functionsMPI.o functionsAllToAllv.o
+functions = main.o functionsFiles.o functionsData.o functionsSort.o functionsMPI.o functionsAllToAllv.o functionsCreateType.o
 
 main: $(functions)
 	mpicc -o main $(functions)
