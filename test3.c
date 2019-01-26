@@ -145,7 +145,6 @@ int main(int argc, char* argv[]){
     MPI_Alltoallv(array, send_counts, send_displs, array_type, recv_array, recv_counts, recv_displs, array_type, MPI_COMM_WORLD);
     
       
-    // Observe the change of array[10] to array[30] in the print below
     if (my_rank == rank_to_print){
       printf("\n\n\n");
       printf("\nArray after Alltoallv\n");
