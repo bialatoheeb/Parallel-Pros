@@ -47,17 +47,18 @@ int main(int argc, char* argv[]){
   //ALL TO ALL TO GET L
   long double* Linfo = (long double *) malloc(((num_ranks+2)*num_ranks)*sizeof(long double));
   long double* L = (long double *) malloc(((num_ranks)*num_ranks)*sizeof(long double));
-  int * total_counts = (int *) malloc(num_ranks * num_ranks*sizeof(int));
-
-  getL(nodeL, Linfo, L);
-
-  // Change to the function Getcount to send/recv to/from all nodes
-  // From here
-  for (i=0;i < (num_ranks*num_ranks); i++)
-    total_counts[i] = 50;
-  // To here
-
-  AllToAllSend(array, recv_array, total_counts);
+  long int* nodeCount = (long int *) malloc(num_ranks*sizeof(long int));
+  long int* totalCount = (long int *) malloc(num_ranks*sizeof(long int));
+  long int* allCounts = (long int *) malloc(num_ranks*num_ranks*sizeof(long int));
+  int balanced;
+  
+  getL(num_ranks, my_rank, nodeL, Linfo, L);
+  getCounts(num, colIndex, array, L, nodeCount, totalCount, allCounts, &balanced);
+  
+  if (balanced == 1)
+    AllToAllSend(array, recv_array, allCounts);
+  else
+    printf("ADJUSTMENT");
 
   MPI_Type_free(&array_type);
   free(array);
