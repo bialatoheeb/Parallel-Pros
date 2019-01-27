@@ -24,11 +24,15 @@ int compare_datastruct(const void*, const void*, int);
 int compare_x(const void*, const void*);
 int compare_y(const void*, const void*);
 int compare_z(const void*, const void*);
+int compare_longdouble(const void*, const void*);
 
-void getNodeL(int, int, void*, void*);
+void getallCount(const int, const int, void*, void*);
+void getCounts(const int, const int, void*, void *, void *, void *);
+void checkBalance(void *, void *);
 void printNodeL(void*);
-void getL(void *, void *, void *);
-void getCounts(const int num, const int colIndex, const void * varray, void * vL, void * vnodeCount, void * vtotalCount, void * vallCounts, int * balanced);
+void adjustL(const int, const int, void*, void *, void*);
+//void getL(void *, void *, void *);
+//void getCounts(const int num, const int colIndex, const void * varray, void * vL, void * vnodeCount, void * vtotalCount, void * vallCounts, int * balanced);
 
 void AllToAllSend(void *, void *, void *);
 void create_array_datatype();

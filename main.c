@@ -37,28 +37,33 @@ int main(int argc, char* argv[]){
     printf("colIndex is between 0 and 2\n");
     exit(0);
   }
-   
-  // vars for lower bound
-  long double* nodeL = (long double *) malloc((num_ranks+2)*sizeof(long double));
-  
-  getNodeL(num, colIndex, nodeL, array);
-  printNodeL(nodeL);
- 
-  //ALL TO ALL TO GET L
-  long double* Linfo = (long double *) malloc(((num_ranks+2)*num_ranks)*sizeof(long double));
-  long double* L = (long double *) malloc(((num_ranks)*num_ranks)*sizeof(long double));
-  long int* nodeCount = (long int *) malloc(num_ranks*sizeof(long int));
-  long int* totalCount = (long int *) malloc(num_ranks*sizeof(long int));
   long int* allCounts = (long int *) malloc(num_ranks*num_ranks*sizeof(long int));
-  int balanced;
-  
-  getL(nodeL, Linfo, L);
-  getCounts(num, colIndex, array, L, nodeCount, totalCount, allCounts, &balanced);
-  
-  if (balanced == 1)
-    AllToAllSend(array, recv_array, allCounts);
-  else
-    printf("ADJUSTMENT");
+  getallCount(num, colIndex, array, allCounts); 
+  // vars for lower bound
+  //long double* nodeL = (long double *) malloc((num_ranks+2)*sizeof(long double));
+  //
+  //getNodeL(num, colIndex, nodeL, array);
+  //printNodeL(nodeL);
+  //
+  ////ALL TO ALL TO GET L
+  //long double* Linfo = (long double *) malloc(((num_ranks+2)*num_ranks)*sizeof(long double));
+  //long double* L = (long double *) malloc(((num_ranks)*num_ranks)*sizeof(long double));
+  //long int* nodeCount = (long int *) malloc(num_ranks*sizeof(long int));
+  //long int* totalCount = (long int *) malloc(num_ranks*sizeof(long int));
+  //long int* allCounts = (long int *) malloc(num_ranks*num_ranks*sizeof(long int));
+  //int balanced;
+  //
+  //getL(nodeL, Linfo, L);
+  //getCounts(num, colIndex, array, L, nodeCount, totalCount, allCounts, &balanced);
+  //
+  //while(balanced == 0){
+  //  adjustLimits(L,totalCount);
+  //  getCounts(num, colIndex, array, L, nodeCount, totalCount, allCounts, &balanced);
+  //}
+  //if (balanced == 1)
+  //  AllToAllSend(array, recv_array, allCounts);
+  //else
+  //  printf("ADJUSTMENT");
 
   MPI_Type_free(&array_type);
   free(array);
