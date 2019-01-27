@@ -52,7 +52,7 @@ int main(int argc, char* argv[]){
   long int* allCounts = (long int *) malloc(num_ranks*num_ranks*sizeof(long int));
   int balanced;
   
-  getL(num_ranks, my_rank, nodeL, Linfo, L);
+  getL(nodeL, Linfo, L);
   getCounts(num, colIndex, array, L, nodeCount, totalCount, allCounts, &balanced);
   
   if (balanced == 1)

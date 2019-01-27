@@ -1,6 +1,6 @@
 #include "headerFuncs.h"
 
-void getL(const int num_ranks, const int my_rank, void * vnodeL, void * vLinfo, void * vL){
+void getL(void * vnodeL, void * vLinfo, void * vL){
   long double  *L = (long double *) vL;
   long double  *Linfo = (long double *) vLinfo;
   long double  *nodeL = (long double *) vnodeL;
@@ -84,11 +84,11 @@ void getCounts(const int num, const int colIndex, const void * varray, void * vL
     }
   }
   
-  ////if (my_rank == 0){
-  //  for (i=0;i<num_ranks*num_ranks;i++){
-  //    printf("rank: %u; allCounts[%u]: %Lu\n",my_rank, i,allCounts[i]);
-  //  }
-  //  //}
+  //if (my_rank == 0){
+    for (i=0;i<num_ranks*num_ranks;i++){
+      printf("rank: %u; allCounts[%u]: %Lu\n",my_rank, i,allCounts[i]);
+    }
+    //}
 
     //MPI_Barrier(MPI_COMM_WORLD);
     //printf("===========\n");
@@ -102,11 +102,11 @@ void getCounts(const int num, const int colIndex, const void * varray, void * vL
   
   }
   
-  ////if (my_rank == 0){
-  //  for (i=0;i<num_ranks;i++){
-  //    printf("totalCount[%u]: %Lu\n",i,totalCount[i]);
-  //    //  total += totalCount[i];
-  //  }
+  //if (my_rank == 0){
+    for (i=0;i<num_ranks;i++){
+      printf("totalCount[%u]: %Lu\n",i,totalCount[i]);
+      //  total += totalCount[i];
+    }
     //}
   
   
@@ -122,7 +122,7 @@ void getCounts(const int num, const int colIndex, const void * varray, void * vL
       *balanced = 0;
   }
   
-  //printf("balanced: %u\n", *balanced);
+  printf("balanced: %u\n", *balanced);
   
 
   //free(allCounts);
