@@ -28,7 +28,7 @@ int compare_z(const void*, const void*);
 void getNodeL(int, int, void*, void*);
 void printNodeL(void*);
 void getL(void *, void *, void *);
-void getCounts(const int num_ranks, const int my_rank, const int num, const int colIndex, const void * varray, void * vL, void * vnodeCount, void * vtotalCount, void * vallCounts, int * balanced);
+void getCounts(const int num, const int colIndex, const void * varray, void * vL, void * vnodeCount, void * vtotalCount, void * vallCounts, int * balanced);
 
 void AllToAllSend(void *, void *, void *);
 void create_array_datatype();
