@@ -17,3 +17,9 @@ int compare_y(const void* s1, const void* s2){
 int compare_z(const void* s1, const void* s2){
   return compare_datastruct(s1, s2, 2);
 }
+
+int compare_longdouble(const void* s1, const void* s2){
+  long double *p1 = (long double *) s1;
+  long double  *p2 = (long double *) s2;
+  return *p1 > *p2;
+}
