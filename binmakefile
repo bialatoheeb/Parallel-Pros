@@ -1,0 +1,7 @@
+
+
+texttoBinaryConvert: texttoBinaryConvert.c
+	mpicc -o texttoBinaryConvert texttoBinaryConvert.c
+
+clean:
+	rm *~ texttoBinaryConvert

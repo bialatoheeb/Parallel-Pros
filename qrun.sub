@@ -1,0 +1,10 @@
+!#/bin/bash
+
+
+#$ -N binaryRun
+#$ -pe mpi 1
+#$ -q amd.q
+
+
+mpirun -np $NSLOTS $HOME/localstorage/texttoBinaryConvert > $HOME/localstorage/output.txt
+
