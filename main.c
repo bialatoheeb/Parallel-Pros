@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
   struct data_struct* recv_array;  // To be allocated after getting count
 
   // read from file
-  readFromFile(argv[2], num, array);
+  readFromFile(my_rank, num, array);
 
   //sort
   if (colIndex == 0)
