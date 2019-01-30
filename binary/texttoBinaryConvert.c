@@ -3,11 +3,13 @@
 #include <stdlib.h>
 #include "mpi.h"
 
+
+
 int main(int argc, char* argv[]) {
-        
   FILE *textFile, *binaryFile;
   char ch, chint[10], chd[22], infname[17+46], outfname[18+46+7];
   int i = 0, k;
+  long long int m;
   long int j= 0, l=0;
   long int vali;  // 1 value integer
   long double vald[3]; //3 values double
@@ -18,7 +20,7 @@ int main(int argc, char* argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   
   
-  for (i=1; i<=501; i++){
+  for (i=109; i<=499; i++){
     sprintf(infname,"/home/gst2d/localstorage/public/coms7900-data/datafile%05u.txt",i);
     sprintf(outfname,"/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile%05u.bin",i);
     printf("%63s\n", infname);
@@ -43,22 +45,40 @@ int main(int argc, char* argv[]) {
   
     /*  Read input file and store in binary form 
      */       
-    j = (i-1)*20000000+1;
+    j = (i-1);
+    j *= 20000000;
+    j += 1;
+    m = (i-1);
+    m *= 20000000;
+    
     //l = (i-1)*20000000+100;
     while (!feof(textFile)){
-      fscanf(textFile, "%lu  %Lf  %Lf %Lf\n", &vali,&vald[0], &vald[1], &vald[2]);
-      fwrite(&j, sizeof(long int), 1, binaryFile);
+
+      for (k=0;k<10;k++)
+	  ch = getc(textFile);
+      fscanf(textFile, "%Lf  %Lf %Lf\n",&vald[0], &vald[1], &vald[2]);
+      //if (j > (i-1)*20000000+20000000-1){
+      //	for (k=0;k<10;k++)
+      //	  ch = getc(textfile);
+      //	fscanf(textFile, "%Lf  %Lf %Lf\n",&vald[0], &vald[1], &vald[2]);
+      //}else{
+      //	fscanf(textFile, "%lu  %Lf  %Lf %Lf\n", &vali,&vald[0], &vald[1], &vald[2]);
+      //}
+      fwrite(&j, sizeof(long long int), 1, binaryFile);
       
       for (k =0; k< 3; k++){
 	fwrite(&vald[k], sizeof(long double), 1, binaryFile);
       }   
       j++;
-      //printf("j: %lu\n",j);
-      //if (j > (i-1)*20000000+100)
+      //printf("m: %llu\n",m);
+      //printf("i: %lu\n",i);
+      //printf("%lu  %Lf  %Lf %Lf\n", j,vald[0], vald[1], vald[2]);
+      //if (j > (i-1)*m)
       //	break;
-      //
+      
     }
-    printf("size: %lu\n", j - (i-1)*20000000);
+    j -= m;
+    printf("size: %lu\n", j);
   
      
     fclose(textFile);
