@@ -17,7 +17,7 @@ int num_ranks;
 int my_rank;
      
 void getArraySize(const char*, int*);
-void readFromFile(const char*, const int, void*);
+void readFromFile(const int, const int, void*);
 void printFile( const int, void*);
 
 int compare_datastruct(const void*, const void*, int);
