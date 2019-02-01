@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
   char fname[71];//filePathLength + 18];
   //char fid[18];
   sprintf(fname,"/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", my_rank+1);
-  
+  create_array_datatype();
 
   readFromFile(fname,num, array);
   //if (my_rank == 0){
