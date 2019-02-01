@@ -1,0 +1,30 @@
+
+ADD TO .ssh/config:
+
+Host herscheltobabbage
+     HostName herschel.cs.mtsu.edu
+     User gst2d
+     LocalForward 2022 babbage.mtsu.edu:22
+          
+Host mylocal
+     Hostname localhost
+     User gst2d
+     Port 2022
+
+set up the port in screen (dont forget to logout or it will run forever!!!!!!!!!!!!)
+1) screen
+2) ssh herscheltobabbage
+3) ctrl+a d -> let screen run in background
+
+ssh to babbage
+4) ssh mylocal
+
+scp babbage
+5) scp mylocal:~/myfile .
+
+sftp (it works with mylocal)
+
+logout of screen and herschel
+6) screen -r -> reattach to 1 screen (if this says you have two screens then screen -r screenId)
+7) exit (for heschel)
+8) exit (for screen)
