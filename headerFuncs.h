@@ -17,7 +17,7 @@ int num_ranks;
 int my_rank;
      
 void getArraySize(const char*, int*);
-void readFromFile(const int, const int, void*);
+void readFromFile(char*, const int, void*);
 void printFile( const int, void*);
 
 int compare_datastruct(const void*, const void*, int);
@@ -30,7 +30,7 @@ void getallCount(const int, const int, void*, void*);
 void getCounts(const int, const int, void*, void *, void *, void *);
 void checkBalance(void *, void *);
 void printNodeL(void*);
-void adjustL(const int, const int, void*, void *, void*);
+void adjustL(const int, const int, void*, void *, void*, void *);
 //void getL(void *, void *, void *);
 //void getCounts(const int num, const int colIndex, const void * varray, void * vL, void * vnodeCount, void * vtotalCount, void * vallCounts, int * balanced);
 

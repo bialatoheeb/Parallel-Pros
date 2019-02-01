@@ -20,7 +20,6 @@ void getallCount(const int num, const int colIndex, void* varray, void *vallCoun
   // the min of N evenly split groups on each node
   //
   //============================
-  
   D = (int)(num/num_ranks);
   j = 0;
   nodeDivL[num_ranks+1] = num;
@@ -33,7 +32,10 @@ void getallCount(const int num, const int colIndex, void* varray, void *vallCoun
     }
     
   }
-
+  //if (my_rank == 0){
+  //  for (i=0;i< num_ranks+2;i++)
+  //    printf("nodeDivL[%u]: %lf\n", i, nodeDivL[i]);
+  //}
   
   //============================
   //
@@ -118,8 +120,8 @@ void getallCount(const int num, const int colIndex, void* varray, void *vallCoun
   //============================
   
   
-  if (balanced == 0)
-    adjustL(num, colIndex, array, L, allCounts, totalCount);  
+  //if (balanced == 0)
+  //  adjustL(num, colIndex, array, L, allCounts, totalCount);  
   
 }
 
