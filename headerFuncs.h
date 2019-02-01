@@ -12,6 +12,7 @@ struct data_struct{
   long double xyz[3];
 };
 
+//MPI_Comm MPI_COMM_WORLD;
 MPI_Datatype array_type;
 int num_ranks;
 int my_rank;
@@ -31,9 +32,10 @@ void getCounts(const int, const int, void*, void *, void *, void *);
 void checkBalance(void *, void *);
 void printNodeL(void*);
 void adjustL(const int, const int, void*, void *, void*, void *);
+void do_sort(struct data_struct*, int, int);
 //void getL(void *, void *, void *);
 //void getCounts(const int num, const int colIndex, const void * varray, void * vL, void * vnodeCount, void * vtotalCount, void * vallCounts, int * balanced);
 
-void AllToAllSend(void *, void *, void *);
+struct data_struct*  AllToAllSend(void *, int *, void *);
 void create_array_datatype();
 #endif
