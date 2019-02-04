@@ -37,5 +37,6 @@ void do_sort(struct data_struct*, int, int);
 //void getCounts(const int num, const int colIndex, const void * varray, void * vL, void * vnodeCount, void * vtotalCount, void * vallCounts, int * balanced);
 
 struct data_struct*  AllToAllSend(void *, int *, void *);
+struct data_struct*  AllToAllIsend(void *, int *, void *);
 void create_array_datatype();
 #endif

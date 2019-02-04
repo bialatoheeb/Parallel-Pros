@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
   }
   
   int num = atoi(argv[1]);
-  int i, j, k, l, colIndex =0;
+  int i, j, k, l, colIndex = 0;
   
   struct data_struct* array  = (struct data_struct *) malloc(num * sizeof(struct data_struct));
   
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
   create_array_datatype();
 
   readFromFile(fname,num, array);
- 
+
   //sort
   do_sort(array, num, colIndex);
  
@@ -29,15 +29,18 @@ int main(int argc, char* argv[]) {
   // BALANCE
   int* allCounts = (int *) malloc(num_ranks*num_ranks*sizeof(int));
   getallCount(num, colIndex, array, allCounts); 
-  
-  //Send array  
-  int total_recv_counts;
+    
+  int total_recv_counts;  
+  // All to all 
   struct data_struct *recv_array  = AllToAllSend(array, &total_recv_counts, allCounts);
-  //printf("totalrecvCounts = %d\n", total_recv_counts);
+
+  // MPI_Isend and recv
+  //struct data_struct *recv_array  = AllToAllIsend(array, &total_recv_counts, allCounts);
 
   //sort again
-  do_sort(array, num, colIndex);
+  do_sort(recv_array, total_recv_counts, colIndex);
   
+  //Print the first middle and last on each node
   int temp = (int)total_recv_counts/2;
   for(i=0; i < num_ranks; i++){
     MPI_Barrier(MPI_COMM_WORLD);
@@ -45,7 +48,7 @@ int main(int argc, char* argv[]) {
       printf("Rank %3d: %8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", my_rank, recv_array[0].num, recv_array[0].xyz[0], recv_array[0].xyz[1], recv_array[0].xyz[2]);
       printf("Rank %3d: %8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", my_rank, recv_array[temp].num, recv_array[temp].xyz[0], recv_array[temp].xyz[1], recv_array[temp].xyz[2]);
       printf("Rank %3d: %8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", my_rank, recv_array[total_recv_counts-1].num, recv_array[total_recv_counts-1].xyz[0], recv_array[total_recv_counts-1].xyz[1], recv_array[total_recv_counts-1].xyz[2]);
-
+  
 //      for (i=0; i < total_recv_counts; i++)
 //      printf("%8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", recv_array[i].num, recv_array[i].xyz[0], recv_array[i].xyz[1], recv_array[i].xyz[2]);
     }
