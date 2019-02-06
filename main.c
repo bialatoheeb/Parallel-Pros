@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
   
   //READ
   char fname[71];
-  sprintf(fname,"/home/tab7v/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", my_rank+1);
+  sprintf(fname,"/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", my_rank+1);
   create_array_datatype();
 
   readFromFile(fname,num, array);
@@ -28,8 +28,33 @@ int main(int argc, char* argv[]) {
 
   // BALANCE
   int* allCounts = (int *) malloc(num_ranks*num_ranks*sizeof(int));
+  int* totalCount = (int *) malloc(num_ranks*sizeof(int));
   getallCount(num, colIndex, array, allCounts); 
-    
+  if (my_rank == 0){
+    printf("%5s|", " ");
+    for (i=0; i<num_ranks; i++){
+      printf("%9u|", i);
+      totalCount[i] = 0;
+    }
+    printf("\n");
+    k = 0;
+    for (i=0; i<num_ranks; i++){
+      printf("%5u|",i);
+      for (j=0; j<num_ranks; j++){
+	
+	printf("%9u|",allCounts[k]);
+	totalCount[j] += allCounts[k];
+	k++;
+      }
+      printf("\n");
+      
+    }
+    printf("%5s|", "total");
+    for (i=0; i<num_ranks; i++){
+      printf("%9u|", totalCount[i]);
+    }
+    printf("\n================\n\n");
+  }
   int total_recv_counts;  
   // All to all 
   struct data_struct *recv_array  = AllToAllSend(array, &total_recv_counts, allCounts);
