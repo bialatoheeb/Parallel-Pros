@@ -2,16 +2,16 @@
 
 void getallCount(const int num, const int colIndex, void* varray, void *vallCounts){
   struct data_struct  *array = (struct data_struct *) varray;
-  int* allCounts = (int *) vallCounts;
+  int* allCounts = (int *)vallCounts;
   int balanced;
   long double* nodeDivL = (long double *) malloc((num_ranks+2)*sizeof(long double));
-  int* totalCount = (int *) malloc((num_ranks)*sizeof(int));
+  long int* totalCount = (long int *) malloc((num_ranks)*sizeof(long int));
   long double* LDivinfo = (long double *) malloc(((num_ranks+2)*num_ranks)*sizeof(long double));
   long double* LDiv = (long double *) malloc(((num_ranks)*num_ranks)*sizeof(long double));
   long double* L = (long double*) (long double *) malloc((num_ranks+1)*sizeof(long double));
   long double totalMax; // = LDivinfo[num_ranks];
   MPI_Status status;
-  int total=0,K;
+  long int total=0,K;
   int i, j=0, k=0, D;
 					     
   //============================
@@ -120,8 +120,8 @@ void getallCount(const int num, const int colIndex, void* varray, void *vallCoun
   //============================
   
   
-  //if (balanced == 0)
-  //  adjustL(num, colIndex, array, L, allCounts, totalCount);  
+  if (balanced == 0)
+    adjustL(num, colIndex, array, L, allCounts, totalCount);  
   
 }
 
@@ -146,11 +146,11 @@ void getallCount(const int num, const int colIndex, void* varray, void *vallCoun
 void adjustL(const int num,  const int colIndex, void* varray, void *vL, void *vallCounts, void *vtotalCount){
   struct data_struct  *array = (struct data_struct *) varray;
   long double* L = (long double *) vL;
-  int* allCounts = (int *) vallCounts; //malloc(num_ranks*n
-  int* totalCount = (int *) vtotalCount; //malloc((num_ranks)*sizeof(long int));
+  int* allCounts = (int *)vallCounts; //malloc(num_ranks*n
+  long int* totalCount = (long int *) vtotalCount; //malloc((num_ranks)*sizeof(long int));
   
-  int sDiff[num_ranks];
-  int prevsDiff[num_ranks];
+  long int sDiff[num_ranks];
+  long int prevsDiff[num_ranks];
   long double rangeL[num_ranks];
   long double myrange;
   long double totalRange = L[num_ranks] - L[0];
@@ -158,27 +158,26 @@ void adjustL(const int num,  const int colIndex, void* varray, void *vL, void *v
   long double mysmallest;
   //long double * mysmallest = (long double *) malloc(sizeof(long double));
   long double * allSmallest = (long double *) malloc(num_ranks*sizeof(long double));
-  int smallestDiff=0;
-  int smallestDiffCheck=0;
+  long int smallestDiff=0;
+  long int smallestDiffCheck=0;
   long double smallestDiffL[num_ranks];
   int balanced = 0;
   int adjustCount[num_ranks];
   double percentRange[num_ranks];
 
   MPI_Status status;
-  int total=0,K;
-  int i, j=0, k=0, D, startIndex = 1;
-
+  long int total=0,K;
+  int i, j=0, k=0, D, startIndex = 1, totalIterations;
  
   //============================
   //
   // Get Required variables
   //
   //============================
-  for (i=0; i<num_ranks;i++)
-    total+=totalCount[i];
+  for (i=0; i<num_ranks*num_ranks;i++)
+    total+=allCounts[i];
   K = total/num_ranks;
-
+  
   for (i=0; i<num_ranks; i++){
     sDiff[i] = totalCount[i]-K;
     smallestDiff += sDiff[i];
@@ -239,14 +238,17 @@ void adjustL(const int num,  const int colIndex, void* varray, void *vL, void *v
       smallest = allSmallest[i];
   }
   
-  //printf("smallest: %0.14Lf\n", smallest);
-
+  //printf("Node: %u; smallest: %0.14Lf\n", my_rank, smallest);
+  //for (j=0;j<num_ranks;j++)
+  //  printf("Node: %u; %u: %Lu\n", my_rank, j, totalCount[j]);
+  
   //============================
   //
   // Adjust Each L until "Balanced"
   //
   //============================
-  
+  totalIterations = 0;
+  startIndex = 1;
   while (balanced == 0){
     //printf("\n==============\n");
     //for (i=0;i<num_ranks;i++)
@@ -271,7 +273,7 @@ void adjustL(const int num,  const int colIndex, void* varray, void *vL, void *v
 	      percentRange[i] /=2;
 	  }else{                                 // stepsize too small
 	    if (totalCount[i-1] > 0){ //skip node if count != 0
-	      prevsDiff[i-1] = sDiff[i-1];
+	      //prevsDiff[i-1] = sDiff[i-1];
 	      startIndex += 1;
 	      break; // Go to next node immediately (skip the rest)
 	    }
@@ -296,10 +298,11 @@ void adjustL(const int num,  const int colIndex, void* varray, void *vL, void *v
 	
 	// getCounts
 	getCounts(num, colIndex, array, L, totalCount, allCounts);
-
+	
 	// Set new Vars
 	smallestDiffCheck = 0;
 	for (j=0; j<num_ranks; j++){
+	  prevsDiff[j] = sDiff[j]; // Set prefsDiff before sDiff changes
 	  sDiff[j] = totalCount[j]-K;
 	  smallestDiffCheck += sDiff[j];
 	  if (j > 0 && j < num_ranks-1 )
@@ -310,23 +313,40 @@ void adjustL(const int num,  const int colIndex, void* varray, void *vL, void *v
 	  for (j=0; j<num_ranks; j++){
 	       smallestDiffL[i] = L[i];
 	  }
-	} 
-	
+	}
+
+	//MPI_Barrier(MPI_COMM_WORLD);
+	////printf("Node: %u; totalIt: %u\n", my_rank, total);
+	//for (j=0;j<num_ranks;j++)
+	//  printf("Node: %u; j: %u; iteration[j]: %u; L[j]: %Lf, totalCount[j]: %Lu; balanced: %u\n", my_rank, j, adjustCount[j], L[j], totalCount[j], balanced);
+	//if (totalIterations > 2)
+	//  balanced = 1;
+	//MPI_Barrier(MPI_COMM_WORLD);
+	    
 	// Adjust 1 limit at a time
 	break; 
       }
+      
     }// break out of here  
-    
+    //printf("Rank: %u; balanced: %u\n", my_rank, balanced);
+    totalIterations++;
   }
+  // Use smallestDiffL if it's better than L
   balanced = 1;
-  for (i=0;i<num_ranks;i++){
-    if (L[i]!=smallestDiffL[i]){
-      balanced = 0;
+  smallestDiffCheck = 0;
+  for (j=0; j<num_ranks; j++){
+    smallestDiffCheck += sDiff[j];
+  }
+  if (smallestDiff < smallestDiffCheck){
+    balanced = 0;
+    for (j=0; j<num_ranks; j++){
       L[i] = smallestDiffL[i];
     }
   }
+  
   if (balanced == 0)
     getCounts(num, colIndex, array, L, totalCount, allCounts);
+  
   
 	
 }
@@ -334,12 +354,12 @@ void adjustL(const int num,  const int colIndex, void* varray, void *vL, void *v
 void getCounts(const int num,  const int colIndex, void* varray, void *vL, void *vtotalCount, void *vallCounts){
   struct data_struct  *array = (struct data_struct *) varray;
   long double* L = (long double *) vL;
-  int* totalCount = (int *) vtotalCount;
-  int* allCounts = (int *) vallCounts; //malloc(num_ranks*num_ranks*sizeof(long int));
-  int* nodeCount = (int *) malloc(num_ranks*sizeof(int));
+  long int* totalCount = (long int *) vtotalCount;
+  int* allCounts = (int *)vallCounts; //malloc(num_ranks*num_ranks*sizeof(long int));
+  long int* nodeCount = (long int *) malloc(num_ranks*sizeof(long int));
   long double totalMax; // = LDivinfo[num_ranks];
   MPI_Status status;
-  int total=0,K;
+  long int total=0,K;
   int i, j=0, k=0, D;
   
   //============================
@@ -379,7 +399,7 @@ void getCounts(const int num,  const int colIndex, void* varray, void *vL, void 
   for (i=0;i<num_ranks;i++){
     if (my_rank != i){
       for (k=0;k<num_ranks;k++)
-	MPI_Send(nodeCount+k, 1, MPI_INT, i, k, MPI_COMM_WORLD);
+	MPI_Send(nodeCount+k, 1, MPI_LONG_INT, i, k, MPI_COMM_WORLD);
     }else{
       for (j=0;j<num_ranks;j++){
 	allCounts[j + my_rank*num_ranks] = nodeCount[j];
@@ -390,7 +410,7 @@ void getCounts(const int num,  const int colIndex, void* varray, void *vL, void 
   for (i=0; i<num_ranks;i++){
     if (my_rank != i){
       for (k=0;k<num_ranks;k++)
-	MPI_Recv(allCounts+i*num_ranks+k, 1, MPI_INT, i, k, MPI_COMM_WORLD, &status);
+	MPI_Recv(allCounts+i*num_ranks+k, 1, MPI_LONG_INT, i, k, MPI_COMM_WORLD, &status);
       
     }else{
       for (j=0;j<num_ranks;j++){
@@ -423,8 +443,8 @@ void getCounts(const int num,  const int colIndex, void* varray, void *vL, void 
 
 void checkBalance(void *vbalanced, void *vtotalCount){
   int* balanced = (int *) vbalanced;
-  int* totalCount = (int *) vtotalCount;
-  int total=0,K;
+  long int* totalCount = (long int *) vtotalCount;
+  long int total=0,K;
   int i;
   
   //============================
@@ -442,7 +462,7 @@ void checkBalance(void *vbalanced, void *vtotalCount){
     total += totalCount[i];
   }
   
-  K = (int)(total/num_ranks);
+  K = (long int)(total/num_ranks);
   for (i=0;i<num_ranks;i++){
     if (labs(totalCount[i]-K) > .10*K){
       *balanced = 0;
