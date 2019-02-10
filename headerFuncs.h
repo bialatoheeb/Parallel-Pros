@@ -20,9 +20,11 @@ int my_rank;
      
 void getArraySize(const char*, int*);
 void readFromFile(char*, const int, void*);
-void readFromFileAllRead(int sizeOnAll, void* varray );
+void readFromFileAllRead(int, void*);
+void readFromFile1(int , void* );
 void printFile( const int, void*);
 
+double timestamp();
 int compare_datastruct(const void*, const void*, int);
 int compare_x(const void*, const void*);
 int compare_y(const void*, const void*);
