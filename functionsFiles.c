@@ -117,6 +117,65 @@ void readFromFileAllRead(int sizeOnAll, void* varray ){
   }
   
 }
+void readFile1(int size, void * varray){
+  struct data_struct  *array = (struct data_struct *) varray;
+  struct data_struct temp;
+
+  char fname[71];
+  FILE *fp;
+  int i, j;
+  int size_on_nodes = size / num_ranks;
+  MPI_Request send_req[num_ranks-1];
+  MPI_Status stat;
+  int ranks[num_ranks];
+  int file_no = 1;
+
+  for (j=0; j < num_ranks- 1; j++) 
+    ranks[j] = size_on_nodes;
+  ranks[num_ranks - 1] = size_on_nodes + (size % num_ranks);
+
+  //  printf("size_on_nodes = %d\n", size_on_nodes);
+  if (my_rank  ==  num_ranks-1){
+    struct data_struct * temp_array = (struct data_struct *) malloc(size_on_nodes * sizeof(struct data_struct));
+    sprintf(fname,"/home/tab7v/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", file_no);
+    if ((fp = fopen(fname, "rb")) == NULL){
+	MPI_Finalize();
+	printf("Unable to open file %s\n", fname);
+	exit(0);
+    }
+    for (j = 0; j < num_ranks; j++){
+      i = 0;
+      while (i < ranks[j]){
+	if (!feof(fp)){
+	  fread(&temp.num,sizeof(long int),1,fp);
+	  fread(&temp.xyz[0],sizeof(long double),1,fp);
+	  fread(&temp.xyz[1],sizeof(long double),1,fp);
+	  fread(&temp.xyz[2],sizeof(long double),1,fp);
+	  array[i++] = temp; 
+	}else{
+	  fclose(fp);
+	  sprintf(fname,"/home/tab7v/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", ++file_no);
+	  i--;
+	  if ( (fp = fopen(fname, "rb")) != NULL)
+	    continue;
+	}
+      }
+      if (j != (num_ranks - 1)){
+	if (j > 0)
+	  MPI_Wait(&send_req[j-1], &stat);
+	memcpy(temp_array, array, size_on_nodes * sizeof(struct data_struct));
+	MPI_Isend(temp_array, size_on_nodes, array_type, j, j, MPI_COMM_WORLD, &send_req[j]);
+      }
+    }
+  }else{
+    MPI_Recv(array, size_on_nodes, array_type, num_ranks-1, my_rank, MPI_COMM_WORLD, &stat);
+  }
+
+}
+
+
+
+
 
 
 void printFile( const int size, void* varray ){
