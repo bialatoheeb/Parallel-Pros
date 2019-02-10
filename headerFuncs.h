@@ -28,12 +28,13 @@ int compare_y(const void*, const void*);
 int compare_z(const void*, const void*);
 int compare_longdouble(const void*, const void*);
 
-void getallCount(const int, const int, void*, void*);
-void getCounts(const int, const int, void*, void *, void *, void *);
+void getallCount(int, const int, void*, void*);
+void getCounts(int, const int, void*, void *, void *, void *);
 void checkBalance(void *, void *);
 void printNodeL(void*);
-void adjustL(const int, const int, void*, void *, void*, void *, void*);
+void adjustL(int, const int, void*, void *, void*, void *, void*);
 void do_sort(struct data_struct*, int, int);
+void printCounts(void *);
 //void getL(void *, void *, void *);
 //void getCounts(const int num, const int colIndex, const void * varray, void * vL, void * vnodeCount, void * vtotalCount, void * vallCounts, int * balanced);
 
