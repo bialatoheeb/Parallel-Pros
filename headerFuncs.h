@@ -21,7 +21,7 @@ int my_rank;
 void getArraySize(const char*, int*);
 void readFromFile(char*, const int, void*);
 void readFromFileAllRead(int, void*);
-void readFromFile1(int , void* );
+void readFile1(int , void* );
 void printFile( const int, void*);
 
 double timestamp();
