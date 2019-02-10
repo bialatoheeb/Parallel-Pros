@@ -20,6 +20,7 @@ int my_rank;
      
 void getArraySize(const char*, int*);
 void readFromFile(char*, const int, void*);
+void readFromFileAllRead(int sizeOnAll, void* varray );
 void printFile( const int, void*);
 
 int compare_datastruct(const void*, const void*, int);
