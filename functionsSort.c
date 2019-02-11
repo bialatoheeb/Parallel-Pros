@@ -13,6 +13,8 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   MPI_Status status;
   int total=0,K;
   int i, j=0, k=0, D;
+  //double startTime[2], endTime[2], avgTime[2];
+  //startTime[0] = timestamp();
   //printf("rank: %u, begin\n", my_rank);
   //============================
   //
@@ -113,7 +115,13 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   
   getCounts(num, colIndex, array, L, totalCount, allCounts);
   checkBalance(&balanced, totalCount);
-  //printCount(allCounts);
+  //endTime[0] = timestamp() - startTime[0];
+  //MPI_Reduce(&endTime[0], &startTime[0], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  //avgTime[0] = startTime[0]/num_ranks;
+  //if (my_rank == 0){
+  //  printf("HERE\n");
+  //  printCount(allCounts);
+  //}
   //============================
   //
   // Adjust L if not balanced
@@ -123,9 +131,13 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //printf("node: %u; balanced: %u\n", my_rank,balanced);
   //if (balanced == 0)
   //printf("Before AdjustL rank: %u\n", my_rank);
-    
-  adjustL(num, colIndex, array, L, allCounts, totalCount, &balanced);  
   
+  //startTime[1] = 0.0; //timestamp();
+  adjustL(num, colIndex, array, L, allCounts, totalCount, &balanced);  
+  //endTime[1] = timestamp() - startTime[1];
+  //MPI_Reduce(&endTime[1], &startTime[1], 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+  //if (my_rank == 0  && timePrint == 1)
+  //  printf("%f;%f;", avgTime[0],startTime[1]);
   //printf("After AdjustL rank: %u\n", my_rank);
   
 }
@@ -325,8 +337,7 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
     	  }
     	}
 	//if (my_rank == 0){
-	//  for (j=0;j<num_ranks;j++)
-	//    printf("adjustCount[%u]: %u\n", adjustCount[j]);
+	//  printf("INSIDE\n");
 	//  printCount(allCounts);
 	//}
     	//printf("rank: %u ADJUST AFTER \n", my_rank);
@@ -524,27 +535,27 @@ void printCount(void *vallCounts){
   int i,j,k;
 
   if (my_rank == 0){
-    printf("%5s|", " ");
+    //printf("%15s|", " ");
     for (i=0; i<num_ranks; i++){
-      printf("%9u|", i);
+      //printf("%15u|", i);
       totalCount[i] = 0;
     }
-    printf("\n");
+    //printf("\n");
     k = 0;
     for (i=0; i<num_ranks; i++){
-      printf("%5u|",i);
+      //printf("%15u|",i);
       for (j=0; j<num_ranks; j++){
   	
-  	printf("%9u|",allCounts[k]);
+  	//printf("%15u|",allCounts[k]);
   	totalCount[j] += allCounts[k];
   	k++;
       }
-      printf("\n");
+      //printf("\n");
       
     }
-    printf("%5s|", "total");
+    printf("%15s|", "total");
     for (i=0; i<num_ranks; i++){
-      printf("%9u|", totalCount[i]);
+      printf("%15u|", totalCount[i]);
     }
     printf("\n================\n\n");
   }
