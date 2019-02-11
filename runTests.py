@@ -9,16 +9,17 @@ import time
 def main():
     with open("output.txt", "w") as ot:
         ot.write("DataPoints;Nodes;readTime;1qsort;SortBetweeNodes;TimedataExchange;2qsort;TimeTotal\n")
-    first = 16
+    first = 2
     ranks = []
-    for i in range(2):
+    for i in range(8):
         ranks.append(first)
-        first = first*16
+        first = first*2
         #ranks = [i for i in range(8] #,16]
-    datapoints = [100000000] #i for i in range(10000000,20000001,10000000)] #[40] #, 80, 160]
+    datapoints = [i for i in range(10000000,100000001,10000000)] #[40] #, 80, 160]
     
-    for rank in ranks:
-        for datapoint in datapoints:
+    for datapoint in datapoints:
+        for rank in ranks:
+        
             with open("qtest3.sub", "w") as qt:
                 qt.write("!#/bin/bash\n"
 
