@@ -17,6 +17,7 @@ MPI_Datatype array_type;
 MPI_Datatype ld_type;
 int num_ranks;
 int my_rank;
+int timePrint;
      
 void getArraySize(const char*, int*);
 void readFromFile(char*, const int, void*);
@@ -38,6 +39,7 @@ void printNodeL(void*);
 void adjustL(int, const int, void*, void *, void*, void *, void*);
 void do_sort(struct data_struct*, int, int);
 void printCounts(void *);
+void verify(long double, long double);
 //void getL(void *, void *, void *);
 //void getCounts(const int num, const int colIndex, const void * varray, void * vL, void * vnodeCount, void * vtotalCount, void * vallCounts, int * balanced);
 

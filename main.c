@@ -88,6 +88,9 @@ int main(int argc, char* argv[]) {
   do_sort(recv_array, total_recv_counts, colIndex);
   endTime[5] = timestamp() - startTime[5];
   MPI_Reduce(&endTime[5], &startTime[5], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  
+  verify(recv_array[0].xyz[colIndex], recv_array[total_recv_counts-1].xyz[colIndex]);
+
   avgTime[5] = startTime[5]/num_ranks;
   //Print the first middle and last on each node
   //int temp = (int)total_recv_counts/2;
