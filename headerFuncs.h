@@ -12,6 +12,13 @@ struct data_struct{
   long double xyz[3];
 };
 
+struct node{
+  long double max[3], min[3], maxRadius;
+  struct node *left, *right;
+  int num_below;
+  struct data_struct *center; //leafValue;                                                                                                                                                     
+};
+
 //MPI_Comm MPI_COMM_WORLD;
 MPI_Datatype array_type;
 MPI_Datatype ld_type;
