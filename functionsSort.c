@@ -26,14 +26,10 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   j = 0;
   nodeDivL[num_ranks+1] = num;
   nodeDivL[num_ranks] = array[num-1].xyz[colIndex]; //array[0].x;
-  for(i=0;i<num;i++){
-    if (i%D == 0 && j<num_ranks){
-      nodeDivL[j] = array[i].xyz[colIndex];
-      j++;
-      
-    }
-    
-  }
+  for (i=0;i<num_ranks;i++)
+    nodeDivL[i] = array[i*D].xyz[colIndex];
+
+
   //if (my_rank == 0){
   //  for (i=0;i< num_ranks+2;i++)
   //    printf("nodeDivL[%u]: %lf\n", i, nodeDivL[i]);
