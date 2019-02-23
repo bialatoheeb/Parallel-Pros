@@ -18,6 +18,12 @@ MPI_Datatype ld_type;
 int num_ranks;
 int my_rank;
 int timePrint;
+
+void getMaxMin(void*, int, int, long double*, long double*);
+void getLargestDimension(long double *, long double *, int *);
+void getNode(long double *, long double *, int, void *);
+void printNode(void *);
+void buildTree(void *, int, void *, int);
      
 void getArraySize(const char*, int*);
 void readFromFile(char*, const int, void*);
