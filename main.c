@@ -5,16 +5,19 @@ int main(int argc, char* argv[]) {
     printf("NEED 1 args: number of data points\n");
     exit(0);
   }
-  timePrint = 1;
+  timePrint = 0;
   int datapoints = atoi(argv[1]);
   int num;
   int i, j, k, l, colIndex = 0;
   double startTime[6], endTime[6], avgTime[6];
+  struct node headNode;
   
   startTime[0] = timestamp();
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  
+  j = MPI_Comm_dup(MPI_COMM_WORLD, &MPI_LOCAL_COMM);
   //if (my_rank == 0)
   //  printf("C long double %u\n MPI long long  double %u\n C double %u\n MPI double %u\n", sizeof(long double), MPI_LONG_DOUBLE, sizeof(double), sizeof(MPI_DOUBLE));
   //exit(0);
@@ -37,6 +40,12 @@ int main(int argc, char* argv[]) {
   endTime[1] = timestamp() - startTime[1];
   MPI_Reduce(&endTime[1], &startTime[1], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   avgTime[1] = startTime[1]/num_ranks;
+  //printFile(10, array);
+  buildTreeGlobal(array, num, &headNode, -1);
+  
+  MPI_Finalize();
+  return 0;
+  
   //readFile1(datapoints, array );
   //readFromFileOneToAll(num, array, datapoints);
   //printFile(10, array);
@@ -57,8 +66,7 @@ int main(int argc, char* argv[]) {
   avgTime[2] = startTime[2]/num_ranks;
   if (my_rank == 0 && timePrint == 1)
     printf("%u;%u;%f;%f;", datapoints,num_ranks,avgTime[1],avgTime[2]);
-
-
+  
   // BALANCE
   int* allCounts = (int *) malloc(num_ranks*num_ranks*sizeof(int));
   startTime[3] = timestamp();
@@ -68,7 +76,7 @@ int main(int argc, char* argv[]) {
   avgTime[3] = startTime[3]/num_ranks;
   //printf("rank: %u; num: %u\n", my_rank,num);
   
-  //printCount(allCounts);
+  printCount(allCounts);
   int total_recv_counts;  
   // All to all 
   startTime[4] = timestamp();
@@ -93,14 +101,15 @@ int main(int argc, char* argv[]) {
 
   avgTime[5] = startTime[5]/num_ranks;
   //Print the first middle and last on each node
-  //int temp = (int)total_recv_counts/2;
-  //for(i=0; i < num_ranks; i++){
-  //  MPI_Barrier(MPI_COMM_WORLD);
-  //  if (i == my_rank){
-  //    printf("Rank %3d: %8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", my_rank, recv_array[0].num, recv_array[0].xyz[0], recv_array[0].xyz[1], recv_array[0].xyz[2]);
-  //    printf("Rank %3d: %8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", my_rank, recv_array[temp].num, recv_array[temp].xyz[0], recv_array[temp].xyz[1], recv_array[temp].xyz[2]);
-  //    printf("Rank %3d: %8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", my_rank, recv_array[total_recv_counts-1].num, recv_array[total_recv_counts-1].xyz[0], recv_array[total_recv_counts-1].xyz[1], recv_array[total_recv_counts-1].xyz[2]);
-  //
+  int temp = (int)total_recv_counts/2;
+  for(i=0; i < num_ranks; i++){
+    MPI_Barrier(MPI_COMM_WORLD);
+    if (i == my_rank){
+      printf("Rank %3d: %8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", my_rank, recv_array[0].num, recv_array[0].xyz[0], recv_array[0].xyz[1], recv_array[0].xyz[2]);
+      printf("Rank %3d: %8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", my_rank, recv_array[temp].num, recv_array[temp].xyz[0], recv_array[temp].xyz[1], recv_array[temp].xyz[2]);
+      printf("Rank %3d: %8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", my_rank, recv_array[total_recv_counts-1].num, recv_array[total_recv_counts-1].xyz[0], recv_array[total_recv_counts-1].xyz[1], recv_array[total_recv_counts-1].xyz[2]);
+    }
+  }
 ////      for (i=0; i < total_recv_counts; i++)
 ////      printf("%8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", recv_array[i].num, recv_array[i].xyz[0], recv_array[i].xyz[1], recv_array[i].xyz[2]);
   //  }

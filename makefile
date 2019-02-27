@@ -1,5 +1,15 @@
 
-functions= main.o functionsFiles.o functionsData.o functionsSort.o functionsAllToAllv.o functionsCreateType.o temp.o timestamp.o verify.o functionsSeqTree.o
+functions= main.o \
+	functionsFiles.o \
+	functionsData.o \
+	functionsSort.o \
+	functionsAllToAllv.o \
+	functionsCreateType.o \
+	temp.o \
+	timestamp.o \
+	verify.o \
+	functionsSeqTree.o \
+	functionsGlobalSeqTree.o
 
 main: $(functions)
 	mpicc -o main $(functions) -lm
