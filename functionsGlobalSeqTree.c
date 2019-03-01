@@ -7,7 +7,7 @@ void buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
   long double *arrayMin = (long double *) malloc(3 * sizeof(long double));
   
   int i,j,k;
-  if (num > 1){
+  if (num_ranks > 1){
     //Find biggest Dimension
     // BINARY SEARCH FOR MAX AND MIN
     getMaxMinGlobal(array, num, colIndex, arrayMax, arrayMin);
@@ -19,8 +19,11 @@ void buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
     }
     getLargestDimensionGlobal(arrayMax,arrayMin, &colIndex);
     getNodeGlobal(arrayMax,arrayMin, num, anode);
-    
+    printNode(anode);
+    array = globalSort(array, &num, colIndex);
+    splitRanks(array, num, anode, colIndex);
     return;
+  }
     //printf("colUIndex: %u\n", colIndex);
     
     // Sort Along Dimension
@@ -29,25 +32,10 @@ void buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
   
     
     //printf("\n\n=========\nNODE\n");
-    //printNode(anode);
-    anode->left = (struct node *)malloc(sizeof(struct node));
-    anode->right = (struct node *)malloc(sizeof(struct node));
+    //
     //printf("beforePRINT\n");
     //printNode(head);
-    int index = (int)num/2;
-    if (num%2 == 0){
-      buildTreeGlobal(array, index, anode->left, colIndex);
-      buildTreeGlobal(&array[index], index, anode->right, colIndex);
-    }else{    
-      buildTreeGlobal(array, index, anode->left, colIndex);
-      buildTreeGlobal(&array[index], index+1, anode->right, colIndex);
-    }
-  }else{
-    anode->center = array;
-    printf("LEAF: %Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[0].num, array[0].xyz[0], array[0].xyz[1], array[0].xyz[2]);
-
     
-  }
   
 }
 
@@ -168,5 +156,55 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, long double *arrayMa
       
     }
   }
+
+}
+
+void splitRanks(void *varray, int num, void *vnode, int colIndex){
+  struct data_struct* array  = (struct data_struct *)varray;
+  struct node *anode = (struct node *)vnode;
+  
+
+  int i = 0, j, *size;
+  
+  
+  if (num_ranks > 1){
+    anode->left = (struct node *)malloc(sizeof(struct node));
+    anode->right = (struct node *)malloc(sizeof(struct node));
+    
+    if (my_rank < num_ranks/2){
+      MPI_Comm_split(MPI_LOCAL_COMM,
+    		     0,
+    		     my_rank,
+    		     &MPI_TEMP_COMM);
+      MPI_Comm_free(&MPI_LOCAL_COMM);
+      //MPI_LOCAL_COMM = MPI_TEMP_COMM;
+      j = MPI_Comm_dup(MPI_TEMP_COMM, &MPI_LOCAL_COMM);
+      MPI_Comm_free(&MPI_TEMP_COMM);
+      MPI_Comm_size(MPI_LOCAL_COMM, &num_ranks);
+      //printf("HELLO\n");
+      MPI_Comm_rank(MPI_LOCAL_COMM, &my_rank);
+      buildTreeGlobal(array, num, anode->left, colIndex);
+      //myFunc();
+    
+    }else{
+      MPI_Comm_split(MPI_LOCAL_COMM,
+    		     1,
+    		     my_rank,
+    		     &MPI_TEMP_COMM);
+      MPI_Comm_free(&MPI_LOCAL_COMM);
+      //MPI_LOCAL_COMM = MPI_TEMP_COMM;
+      j = MPI_Comm_dup(MPI_TEMP_COMM, &MPI_LOCAL_COMM);
+      MPI_Comm_free(&MPI_TEMP_COMM);
+      MPI_Comm_size(MPI_LOCAL_COMM, &num_ranks);
+      //printf("HELLO\n");
+      MPI_Comm_rank(MPI_LOCAL_COMM, &my_rank);
+      buildTreeGlobal(array, num, anode->right, colIndex);
+      //myFunc();
+    
+    }
+    
+    
+  }
+
 
 }

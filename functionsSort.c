@@ -42,7 +42,7 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //============================
 
 
-  MPI_Allgather(nodeDivL, num_ranks+2,MPI_LONG_DOUBLE, LDivinfo,num_ranks+2,MPI_LONG_DOUBLE, MPI_COMM_WORLD); 
+  MPI_Allgather(nodeDivL, num_ranks+2,MPI_LONG_DOUBLE, LDivinfo,num_ranks+2,MPI_LONG_DOUBLE, MPI_LOCAL_COMM); 
 
   //============================
   //
@@ -111,13 +111,13 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   getCounts(num, colIndex, array, L, totalCount, allCounts);
   checkBalance(&balanced, totalCount);
   //endTime[0] = timestamp() - startTime[0];
-  //MPI_Reduce(&endTime[0], &startTime[0], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  //MPI_Reduce(&endTime[0], &startTime[0], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_LOCAL_COMM);
   //avgTime[0] = startTime[0]/num_ranks;
-  if (my_rank == 0){
-    //printf("HERE\n");
-    printNodeL(L);
-    printCount(allCounts);
-  }
+  //if (my_rank == 0){
+  //  //printf("HERE\n");
+  //  printNodeL(L);
+  //  printCount(allCounts);
+  //}
   //============================
   //
   // Adjust L if not balanced
@@ -129,9 +129,9 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //printf("Before AdjustL rank: %u\n", my_rank);
   
   //startTime[1] = 0.0; //timestamp();
-  //adjustL(num, colIndex, array, L, allCounts, totalCount, &balanced);  
+  adjustL(num, colIndex, array, L, allCounts, totalCount, &balanced);  
   //endTime[1] = timestamp() - startTime[1];
-  //MPI_Reduce(&endTime[1], &startTime[1], 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+  //MPI_Reduce(&endTime[1], &startTime[1], 1, MPI_DOUBLE, MPI_MAX, 0, MPI_LOCAL_COMM);
   //if (my_rank == 0  && timePrint == 1)
   //  printf("%f;%f;", avgTime[0],startTime[1]);
   //printf("After AdjustL rank: %u\n", my_rank);
@@ -218,7 +218,7 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
       mysmallest = smallest;
   }
   //smallest = mysmallest;
-  MPI_Allreduce(&mysmallest, &smallest, 1, MPI_LONG_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&mysmallest, &smallest, 1, MPI_LONG_DOUBLE, MPI_MIN, MPI_LOCAL_COMM);
   
   //============================
   //
@@ -275,11 +275,11 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
     	// getCounts
     	
     	getCounts(num, colIndex, array, L, totalCount, allCounts);
-	if (my_rank == 0){
-	  //printf("HERE\n");
-	  printNodeL(L);
-	  printCount(allCounts);
-	}
+	//if (my_rank == 0){
+	//  //printf("HERE\n");
+	//  printNodeL(L);
+	//  printCount(allCounts);
+	//}
     	
     	// Set new Vars
     	smallestDiffCheck = 0;
@@ -318,10 +318,10 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
     }
   }
   //smallestDiffBool = 1;
-  MPI_Bcast(&smallestDiffBool, 1, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&smallestDiffBool, 1, MPI_INT, 0, MPI_LOCAL_COMM);
   //printf("rank: %u; smallestDiffBool: %u\n",my_rank,smallestDiffBool);
   if (smallestDiffBool == 0){
-    MPI_Bcast(L, num_ranks, MPI_LONG_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(L, num_ranks, MPI_LONG_DOUBLE, 0, MPI_LOCAL_COMM);
     getCounts(num, colIndex, array, L, totalCount, allCounts);
   }
   
@@ -367,7 +367,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   //}
   //
   //for (i=0;i<num_ranks;i++){
-  //  MPI_Barrier(MPI_COMM_WORLD);
+  //  MPI_Barrier(MPI_LOCAL_COMM);
   //  if (my_rank == i){
   //    printf("my_rank: %u; BEFORE BISECTION\n", my_rank);
   //    for (j=0;j<num_ranks;j++)
@@ -425,7 +425,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   int midi, maxi = num, mini=0, sumi = 0;
   k = 0;
   //for (i=0;i<num_ranks;i++){
-  //  MPI_Barrier(MPI_COMM_WORLD);
+  //  MPI_Barrier(MPI_LOCAL_COMM);
   //  if (my_rank == i){
   //    printf("my_rank: %u\n", my_rank);
   for (k=1;k<num_ranks;k++){
@@ -466,7 +466,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
     nodeCount[num_ranks-1] -= nodeCount[j];
 
   //for (i=0;i<num_ranks;i++){
-  //  MPI_Barrier(MPI_COMM_WORLD);
+  //  MPI_Barrier(MPI_LOCAL_COMM);
   //  if (my_rank == i){
   //    printf("my_rank: %u; AFTER BISECTION2\n", my_rank);
   //    for (j=0;j<num_ranks;j++)
@@ -481,7 +481,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   //============================
 
   
-  MPI_Allgather(nodeCount, num_ranks,MPI_INT, allCounts,num_ranks,MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(nodeCount, num_ranks,MPI_INT, allCounts,num_ranks,MPI_INT, MPI_LOCAL_COMM);
   
   //============================
   //

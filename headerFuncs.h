@@ -29,6 +29,8 @@ int num_ranks;
 int my_rank;
 int timePrint;
 
+struct data_struct* globalSort(void *, int *, int);
+
 void getMaxMin(void*, int, int, long double*, long double*);
 void getLargestDimension(long double *, long double *, int *);
 void getNode(long double *, long double *, int, void *);

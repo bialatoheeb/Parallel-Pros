@@ -28,9 +28,9 @@ struct data_struct *  AllToAllSend(void * sends, int  *total_recv_counts, void *
   }
 
   struct data_struct *recv_array = (struct data_struct *) malloc((*total_recv_counts) * sizeof(struct data_struct));
-  MPI_Alltoallv(send_array, send_counts, send_displs, array_type, recv_array, recv_counts, recv_displs, array_type, MPI_COMM_WORLD);
+  MPI_Alltoallv(send_array, send_counts, send_displs, array_type, recv_array, recv_counts, recv_displs, array_type, MPI_LOCAL_COMM);//MPI_COMM_WORLD);
   //for (i=0; i< 50; i++)
   //   printf("Node: %d\n%Lu\t%Lf\t%Lf\t%Lf\n", my_rank, send_array[i].num, send_array[i].xyz[0], send_array[i].xyz[1], send_array[i].xyz[2]);
-
+  free(send_array);
   return recv_array;
 }

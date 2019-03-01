@@ -9,7 +9,8 @@ functions= main.o \
 	timestamp.o \
 	verify.o \
 	functionsSeqTree.o \
-	functionsGlobalSeqTree.o
+	functionsGlobalSeqTree.o \
+	functionsGlobalSort.o
 
 main: $(functions)
 	mpicc -o main $(functions) -lm
