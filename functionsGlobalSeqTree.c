@@ -60,6 +60,7 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
     //getLargestDimension(anode->max, anode->min, &colIndex);
     //getNodeGlobal(anode->max, anode->min, num, anode);
     anode->num_below = num;
+    anode->center = array;
     return anode;
     
     printf("colIndex: %3u\n",colIndex);

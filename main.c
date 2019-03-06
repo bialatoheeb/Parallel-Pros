@@ -54,9 +54,11 @@ int main(int argc, char* argv[]) {
   
   //array = globalSort(array, &num, colIndex);
   localHead = buildTreeGlobal(array, num, &headNode, -1);
-  printf("AFTER GLOBAL\n");
-  if (my_global_rank == 0)
-    buildTree(array, localHead->num_below, localHead, -1);
+  array = localHead->center;
+  num = localHead->num_below;
+  //printf("AFTER GLOBAL\n");
+  //if (my_global_rank == 0)
+    buildTree(array, num, localHead, -1);
   MPI_Finalize();
   return 0;
   

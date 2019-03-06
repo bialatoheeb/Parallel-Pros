@@ -5,8 +5,6 @@ void buildTree(void *varray, int num, void *vnode, int colIndex){
   struct node *anode = (struct node *)vnode;
   long double *arrayMax = (long double *) malloc(3 * sizeof(long double));
   long double *arrayMin = (long double *) malloc(3 * sizeof(long double));
-  printf("INSIDE LOCAL\n");
-  printFile(num, array);
   int i,j,k;
   if (num > 1){
     //Find biggest Dimension
@@ -25,7 +23,7 @@ void buildTree(void *varray, int num, void *vnode, int colIndex){
   
     getNode(arrayMax,arrayMin, num, anode);
     //printf("\n\n=========\nNODE\n");
-    //printNode(anode);
+    printNodeGlobal(anode);
     anode->left = (struct node *)malloc(sizeof(struct node));
     anode->right = (struct node *)malloc(sizeof(struct node));
     //printf("beforePRINT\n");
@@ -40,7 +38,13 @@ void buildTree(void *varray, int num, void *vnode, int colIndex){
     }
   }else{
     anode->center = array;
-    printf("LEAF: %Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[0].num, array[0].xyz[0], array[0].xyz[1], array[0].xyz[2]);
+
+    char fname[20];
+    sprintf(fname,"/home/gst2d/COMS7900/nodes%03u.txt", my_global_rank);
+    FILE *myfile = fopen(fname, "a");
+    fprintf(myfile,"LEAF: %Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[0].num, array[0].xyz[0], array[0].xyz[1], array[0].xyz[2]);
+    fclose(myfile);
+    
 
     
   }
