@@ -51,14 +51,14 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //
   //============================
 
-					     
+       
   totalMax = LDivinfo[num_ranks];
   for (i=0;i<num_ranks;i++){
     if (totalMax < LDivinfo[i*(num_ranks+2) + num_ranks])
       totalMax = LDivinfo[i*(num_ranks+2) + num_ranks];
 
   }
-					     	
+  
   //============================
   //
   // Get LDiv 
@@ -70,10 +70,10 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   for (i=0; ((num_ranks+2)*num_ranks); i++){
     if (i%(num_ranks+2) == 0){
       for (j=i;j<i+num_ranks; j++){
-  	LDiv[k] = LDivinfo[j];
-  	k++;
-  	if (k >= num_ranks*num_ranks)
-  	  break;
+	LDiv[k] = LDivinfo[j];
+	k++;
+	if (k >= num_ranks*num_ranks)
+	  break;
       }
     }
     if (k >= num_ranks*num_ranks)
@@ -232,70 +232,70 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
     *balanced = 1;
     for (i=startIndex; i<num_ranks;i++){ //check each Li for i = 1-> N-2
       if (fabsl(sDiff[i-1]) > 0.10*K){
-    	*balanced = 0;
-    	// Use range > 0
-    	if (rangeL[i] > 0)
-    	  myrange = rangeL[i];
-    	else
-    	  myrange = totalRange;
-    	
-    	// Fix Range
-    	if (adjustCount[i] != 0){ // NOT first iteration
-    	  if (myrange*percentRange[i] > smallest){// if stepsize not to small
-    	  
-    	    if (fabsl(prevsDiff[i-1]) < fabsl(sDiff[i-1])) //previous step to big
-    	      percentRange[i] /=2;
-    	    else if (prevsDiff[i-1]*sDiff[i-1] > 0) // stepped over target
-    	      percentRange[i] /=2;
-    	  }else{                                 // stepsize too small
-    	    if (totalCount[i-1] > 0){ //skip node if count != 0
-    	      //prevsDiff[i-1] = sDiff[i-1];
-    	      startIndex += 1;
-    	      break; // Go to next node immediately (skip the rest)
-    	    }
-    	  }
-    	}
-    	// Make Adjustments
-    	adjustCount[i] += 1;
+	*balanced = 0;
+	// Use range > 0
+	if (rangeL[i] > 0)
+	  myrange = rangeL[i];
+	else
+	  myrange = totalRange;
+	
+	// Fix Range
+	if (adjustCount[i] != 0){ // NOT first iteration
+	  if (myrange*percentRange[i] > smallest){// if stepsize not to small
+	      
+	    if (fabsl(prevsDiff[i-1]) < fabsl(sDiff[i-1])) //previous step to big
+	      percentRange[i] /=2;
+	    else if (prevsDiff[i-1]*sDiff[i-1] < 0) // stepped over target
+	      percentRange[i] /=2;
+	  }else{                                 // stepsize too small
+	    if (totalCount[i-1] > 0){ //skip node if count != 0
+	      //prevsDiff[i-1] = sDiff[i-1];
+	      startIndex += 1;
+	      break; // Go to next node immediately (skip the rest)
+	    }
+	  }
+	}
+	// Make Adjustments
+	adjustCount[i] += 1;
 	if (sDiff[i-1] > 0)
-    	  L[i] = L[i] - myrange*percentRange[i];
-    	else
-    	  L[i] = L[i] + myrange*percentRange[i];
-    	
-    	// Fix if Li is out of range
-    	for (j=0;j<num_ranks-1;j++){
-    	  if (L[i] > L[i+1])
-    	    L[i+1] = L[i];
-    	}	 
-    	for (j=num_ranks;j>1;j--){
-    	  if (L[i] < L[i-1])
-    	    L[i-1] = L[i];
-    	}
-    	
-    	// getCounts
-    	
-    	getCounts(num, colIndex, array, L, totalCount, allCounts);
-	//if (my_rank == 0){
+	  L[i] = L[i] - myrange*percentRange[i];
+	else
+	  L[i] = L[i] + myrange*percentRange[i];
+	
+	// Fix if Li is out of range
+	for (j=0;j<num_ranks-1;j++){
+	  if (L[i] > L[i+1])
+	    L[i+1] = L[i];
+	} 
+	for (j=num_ranks;j>1;j--){
+	  if (L[i] < L[i-1])
+	    L[i-1] = L[i];
+	}
+	
+	// getCounts
+	
+	getCounts(num, colIndex, array, L, totalCount, allCounts);
+	//if (my_global_rank == 2){
 	//  //printf("HERE\n");
 	//  printNodeL(L);
 	//  printCount(allCounts);
 	//}
-    	
-    	// Set new Vars
-    	smallestDiffCheck = 0;
-    	for (j=0; j<num_ranks; j++){
-    	  prevsDiff[j] = sDiff[j]; // Set prefsDiff before sDiff changes
-    	  sDiff[j] = totalCount[j]-K;
-    	  smallestDiffCheck += sDiff[j];
-    	  if (j > 0)// j < num_ranks-1 )
-    	    rangeL[j] = L[j+1] - L[j-1];
-    	}
-    	if (smallestDiffCheck < smallestDiff){
-    	  smallestDiff = smallestDiffCheck;
-    	  for (j=0; j<num_ranks; j++){
-    	       smallestDiffL[i] = L[i];
-    	  }
-    	}
+	
+	// Set new Vars
+	smallestDiffCheck = 0;
+	for (j=0; j<num_ranks; j++){
+	  prevsDiff[j] = sDiff[j]; // Set prefsDiff before sDiff changes
+	  sDiff[j] = totalCount[j]-K;
+	  smallestDiffCheck += sDiff[j];
+	  if (j > 0)// j < num_ranks-1 )
+	    rangeL[j] = L[j+1] - L[j-1];
+	}
+	if (smallestDiffCheck < smallestDiff){
+	  smallestDiff = smallestDiffCheck;
+	  for (j=0; j<num_ranks; j++){
+	    smallestDiffL[i] = L[i];
+	  }
+	}
 	break; 
       }
       
@@ -313,7 +313,7 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
     if (smallestDiff < smallestDiffCheck){
       smallestDiffBool = 0;
       for (j=0; j<num_ranks; j++){
-  	L[i] = smallestDiffL[i];
+	L[i] = smallestDiffL[i];
       }
     }
   }
@@ -361,7 +361,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   //    nodeCount[k]++;
   //  else{
   //    while (array[i].xyz[colIndex] < L[k])
-  //	k--;
+  //k--;
   //    nodeCount[k]++;
   //  }
   //}
@@ -371,7 +371,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   //  if (my_rank == i){
   //    printf("my_rank: %u; BEFORE BISECTION\n", my_rank);
   //    for (j=0;j<num_ranks;j++)
-  //	printf("nodeCount[%u]: %u\n", j, nodeCount[j]);
+  //printf("nodeCount[%u]: %u\n", j, nodeCount[j]);
   //  }
   //}
 
@@ -387,19 +387,19 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   //    midi = (int)(maxi+mini)/2;
   // 
   //    if (midi == mini || midi == maxi){
-  //	if (L[k] >= array[mini].xyz[colIndex]){
-  //	  midi = mini;
-  //	  break;
-  //	}else if (L[k] >= array[maxi].xyz[colIndex]){
-  //	  midi = maxi;
-  //	  break;
-  //	}
-  //	
+  //if (L[k] >= array[mini].xyz[colIndex]){
+  //  midi = mini;
+  //  break;
+  //}else if (L[k] >= array[maxi].xyz[colIndex]){
+  //  midi = maxi;
+  //  break;
+  //}
+  //
   //    }
   //    if (L[k] < array[midi].xyz[colIndex])
-  //	maxi=midi;
+  //maxi=midi;
   //    else
-  //	mini=midi;
+  //mini=midi;
   //  
   //  }
   //  mini = midi;
@@ -410,7 +410,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   //  else{
   //    nodeCount[k-1] = midi;
   //    for(j = k-2;j>=0;j--)
-  //	nodeCount[k-1] -= nodeCount[j];
+  //nodeCount[k-1] -= nodeCount[j];
   //  }
   //}
   //nodeCount[num_ranks-1] = num;
@@ -459,8 +459,8 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
     }
     
   }
- //   }
- // }
+  //   }
+  // }
   nodeCount[num_ranks-1] = num;
   for(j = num_ranks-2;j>=0;j--)
     nodeCount[num_ranks-1] -= nodeCount[j];
@@ -470,7 +470,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   //  if (my_rank == i){
   //    printf("my_rank: %u; AFTER BISECTION2\n", my_rank);
   //    for (j=0;j<num_ranks;j++)
-  //	printf("nodeCount[%u]: %u\n", j, nodeCount[j]);
+  //printf("nodeCount[%u]: %u\n", j, nodeCount[j]);
   //  }
   //}
   //============================
@@ -563,10 +563,10 @@ void printCount(void *vallCounts){
     for (i=0; i<num_ranks; i++){
       printf("%15u|",i);
       for (j=0; j<num_ranks; j++){
-  	
-  	printf("%15u|",allCounts[k]);
-  	totalCount[j] += allCounts[k];
-  	k++;
+	
+	printf("%15u|",allCounts[k]);
+	totalCount[j] += allCounts[k];
+	k++;
       }
       printf("\n");
       

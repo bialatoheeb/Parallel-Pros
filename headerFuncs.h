@@ -26,8 +26,9 @@ MPI_Comm MPI_LOCAL_COMM, MPI_TEMP_COMM;
 MPI_Datatype array_type;
 MPI_Datatype ld_type;
 int num_ranks;
-int my_rank;
+int my_rank, my_global_rank;
 int timePrint;
+
 
 struct data_struct* globalSort(void *, int *, int);
 
@@ -41,8 +42,8 @@ void getMaxMinGlobal(void*, int, int, long double*, long double*);
 void getLargestDimensionGlobal(long double *, long double *, int *);
 void getNodeGlobal(long double *, long double *, int, void *);
 void printNodeGlobal(void *);
-void buildTreeGlobal(void *, int, void *, int);
-
+struct node * buildTreeGlobal(void *, int, void *, int);
+struct node * splitRanks(void *, int, void *, int);
      
 void getArraySize(const char*, int*);
 void readFromFile(char*, const int, void*);

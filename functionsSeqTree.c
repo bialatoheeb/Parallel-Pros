@@ -5,6 +5,8 @@ void buildTree(void *varray, int num, void *vnode, int colIndex){
   struct node *anode = (struct node *)vnode;
   long double *arrayMax = (long double *) malloc(3 * sizeof(long double));
   long double *arrayMin = (long double *) malloc(3 * sizeof(long double));
+  printf("INSIDE LOCAL\n");
+  printFile(num, array);
   int i,j,k;
   if (num > 1){
     //Find biggest Dimension
@@ -126,6 +128,7 @@ void getMaxMin(void* varray, int size,  int colIndex, long double *arrayMax, lon
 	arrayMin[colIndex] = array[i].xyz[colIndex];
       
     }
+    
   }
   
 

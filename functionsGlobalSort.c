@@ -4,11 +4,9 @@ struct data_struct * globalSort(void * varray, int *num, int colIndex){
   struct data_struct* array  = (struct data_struct *) varray;
   int i;
   do_sort(array, *num, colIndex);
-  
   // BALANCE
   int* allCounts = (int *) malloc(num_ranks*num_ranks*sizeof(int));
   getallCount(*num, colIndex, array, allCounts); 
-  
   //printCount(allCounts);
   int total_recv_counts;  
   struct data_struct *recv_array = AllToAllSend(array, &total_recv_counts, allCounts);
@@ -44,6 +42,7 @@ struct data_struct * globalSort(void * varray, int *num, int colIndex){
   //
   //avgTime[5] = startTime[5]/num_ranks;
   ////Print the first middle and last on each node
+  //if (my_global_rank == 2){
   //int temp = (int)total_recv_counts/2;
   //for(i=0; i < num_ranks; i++){
   //  //MPI_Barrier(MPI_COMM_WORLD);
@@ -53,6 +52,7 @@ struct data_struct * globalSort(void * varray, int *num, int colIndex){
   //    printf("Rank %3d: %8Lu\t%0.17Lf\t%0.17Lf\t%0.17Lf\n", my_rank, recv_array[total_recv_counts-1].num, recv_array[total_recv_counts-1].xyz[0], recv_array[total_recv_counts-1].xyz[1], recv_array[total_recv_counts-1].xyz[2]);
   //  }
   //  MPI_Barrier(MPI_COMM_WORLD);
+  //}
   //}
   
   //}

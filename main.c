@@ -1,5 +1,12 @@
 #include "headerFuncs.h"
 
+void emptyRankFiles(){
+  char fname[20];
+  sprintf(fname,"/home/gst2d/COMS7900/nodes%03u.txt", my_global_rank);
+  FILE *myfile = fopen(fname, "w");
+  fclose(myfile);
+}
+
 int main(int argc, char* argv[]) {
   if (argc < 2){
     printf("NEED 1 args: number of data points\n");
@@ -10,15 +17,16 @@ int main(int argc, char* argv[]) {
   int num;
   int i, j, k, l, colIndex = 0;
   double startTime[6], endTime[6], avgTime[6];
-  struct node headNode;
+  struct node headNode, *localHead;
   
   startTime[0] = timestamp();
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-  
+  my_global_rank = my_rank;
+  //emptyRankFiles();
   j = MPI_Comm_dup(MPI_COMM_WORLD, &MPI_LOCAL_COMM);
-  //if (my_rank == 0)
+   //if (my_rank == 0)
   //  printf("C long double %u\n MPI long long  double %u\n C double %u\n MPI double %u\n", sizeof(long double), MPI_LONG_DOUBLE, sizeof(double), sizeof(MPI_DOUBLE));
   //exit(0);
   
@@ -35,16 +43,20 @@ int main(int argc, char* argv[]) {
   //READ
   create_array_datatype();
   //readFromFile(fname, num, array);
-  startTime[1] = timestamp();
   readFromFileAllRead(datapoints, array );
-  endTime[1] = timestamp() - startTime[1];
-  MPI_Reduce(&endTime[1], &startTime[1], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  avgTime[1] = startTime[1]/num_ranks;
-  //printFile(10, array);
+  // printFile(10, array);
+  //if (my_global_rank == 0){
+  //  printFile(10, array);
+  //  printf("before global Tree (main)\n");
+  //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", num-1, array[num-1].xyz[0], array[num-1].xyz[1], array[num-1].xyz[2]);
+  //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", 0, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
+  //}
   
   //array = globalSort(array, &num, colIndex);
-  buildTreeGlobal(array, num, &headNode, -1);
-  //buildTree(array, num, &headNode, -1);
+  localHead = buildTreeGlobal(array, num, &headNode, -1);
+  printf("AFTER GLOBAL\n");
+  if (my_global_rank == 0)
+    buildTree(array, localHead->num_below, localHead, -1);
   MPI_Finalize();
   return 0;
   
