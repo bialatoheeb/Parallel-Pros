@@ -3,10 +3,10 @@
 struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
   struct data_struct* array  = (struct data_struct *)varray;
   struct node *anode = (struct node *)vnode;
-  long double *arrayMax = (long double *) malloc(3 * sizeof(long double));
-  long double *arrayMin = (long double *) malloc(3 * sizeof(long double));
+  //long double *arrayMax = (long double *) malloc(3 * sizeof(long double));
+  //long double *arrayMin = (long double *) malloc(3 * sizeof(long double));
   
-  int i,j,k;
+  int i,j,k, globalNum;
   //if (my_global_rank == 1)
   //  printFile(num, array);
   //if (my_global_rank == 2)
@@ -26,21 +26,22 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
     
     
     getLargestDimensionGlobal(anode->max, anode->min, &colIndex);
-    getNodeGlobal(anode->max, anode->min, num, anode);
-    
-    //printf("colIndex: %3u\n",colIndex);
-    printNodeGlobal(anode);
     //if (my_global_rank == 2){
     //  printf("before global Sort\n");
     //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", num-1, array[num-1].xyz[0], array[num-1].xyz[1], array[num-1].xyz[2]);
     //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", 0, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
     //}
-    array = globalSort(array, &num, colIndex);
+    array = globalSort(array, &num, colIndex, &globalNum);
     //if (my_global_rank == 2){
     //  printf("after global Sort\n");
     //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", num-1, array[num-1].xyz[0], array[num-1].xyz[1], array[num-1].xyz[2]);
     //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", 0, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
     //}
+    getNodeGlobal(num, anode, globalNum);
+    
+    //printf("colIndex: %3u\n",colIndex);
+    printNodeGlobal(anode);
+    
     
     return splitRanks(array, num, anode, colIndex);
     
@@ -89,15 +90,15 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
   
 }
 
-void getNodeGlobal(long double *arrayMax, long double *arrayMin, int num, void *vnode){
+void getNodeGlobal(int num, void *vnode, int globalNum){
   struct node *anode = (struct node *)vnode;
   int i;
   long double radToMax=0, radToMin=0;
   anode->center = (struct data_struct *)malloc(sizeof(struct data_struct));
   anode->maxRadius = 0;
   for (i=0;i<3;i++){
-    anode->max[i] = arrayMax[i];
-    anode->min[i] = arrayMin[i];
+    //anode->max[i] = arrayMax[i];
+    //anode->min[i] = arrayMin[i];
     anode->center->xyz[i] = (anode->max[i] + anode->min[i])/2;
     radToMax += (anode->center->xyz[i]-anode->max[i])*(anode->center->xyz[i]-anode->max[i]);
     radToMin += (anode->center->xyz[i]-anode->min[i])*(anode->center->xyz[i]-anode->min[i]);
@@ -110,7 +111,7 @@ void getNodeGlobal(long double *arrayMax, long double *arrayMin, int num, void *
   else
     anode->maxRadius = radToMin;
   
-  anode->num_below = num;
+  anode->num_below = globalNum;
   
 }
 

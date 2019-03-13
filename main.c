@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
   num = localHead->num_below;
   //printf("AFTER GLOBAL\n");
   //if (my_global_rank == 0)
-    buildTree(array, num, localHead, -1);
+  buildTree(array, num, localHead, -1);
   MPI_Finalize();
   return 0;
   

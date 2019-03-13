@@ -30,17 +30,17 @@ int my_rank, my_global_rank;
 int timePrint;
 
 
-struct data_struct* globalSort(void *, int *, int);
+struct data_struct* globalSort(void *, int *, int, int *);
 
 void getMaxMin(void*, int, int, long double*, long double*);
 void getLargestDimension(long double *, long double *, int *);
-void getNode(long double *, long double *, int, void *);
+void getNode(int, void *);
 void printNode(void *);
 void buildTree(void *, int, void *, int);
 
 void getMaxMinGlobal(void*, int, int, long double*, long double*);
 void getLargestDimensionGlobal(long double *, long double *, int *);
-void getNodeGlobal(long double *, long double *, int, void *);
+void getNodeGlobal(int, void *, int);
 void printNodeGlobal(void *);
 struct node * buildTreeGlobal(void *, int, void *, int);
 struct node * splitRanks(void *, int, void *, int);

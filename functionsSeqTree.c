@@ -3,29 +3,34 @@
 void buildTree(void *varray, int num, void *vnode, int colIndex){
   struct data_struct* array  = (struct data_struct *)varray;
   struct node *anode = (struct node *)vnode;
-  long double *arrayMax = (long double *) malloc(3 * sizeof(long double));
-  long double *arrayMin = (long double *) malloc(3 * sizeof(long double));
+  //long double *arrayMax = (long double *) malloc(3 * sizeof(long double));
+  //long double *arrayMin = (long double *) malloc(3 * sizeof(long double));
   int i,j,k;
   if (num > 1){
     //Find biggest Dimension
     // BINARY SEARCH FOR MAX AND MIN
-    getMaxMin(array, num, colIndex, arrayMax, arrayMin);
+    getMaxMin(array, num, colIndex, anode->max, anode->min); //arrayMax, arrayMin);
     //printf("%5s\t%15s\t%15s\t\n", "COL","MAX","MIN");
     //for (i=0;i<3;i++){
     //  printf("%5u\t%15Lf\t%15Lf\t\n", i,arrayMax[i],arrayMin[i]);
     //}
-    getLargestDimension(arrayMax,arrayMin, &colIndex);
+    getLargestDimension(anode->max, anode->min, &colIndex);
     //printf("colUIndex: %u\n", colIndex);
 
     // Sort Along Dimension
     do_sort(array, num, colIndex);
     // Calculate node values
   
-    getNode(arrayMax,arrayMin, num, anode);
-    //printf("\n\n=========\nNODE\n");
+    getNode(num, anode);
     printNodeGlobal(anode);
     anode->left = (struct node *)malloc(sizeof(struct node));
     anode->right = (struct node *)malloc(sizeof(struct node));
+    for (i=0;i<3;i++){
+      anode->left->max[i] = anode->max[i];
+      anode->left->min[i] = anode->min[i];
+      anode->right->max[i] = anode->max[i];
+      anode->right->min[i] = anode->min[i];
+    }
     //printf("beforePRINT\n");
     //printNode(head);
     int index = (int)num/2;
@@ -51,15 +56,15 @@ void buildTree(void *varray, int num, void *vnode, int colIndex){
   
 }
 
-void getNode(long double *arrayMax, long double *arrayMin, int num, void *vnode){
+void getNode(int num, void *vnode){
   struct node *anode = (struct node *)vnode;
   int i;
   long double radToMax=0, radToMin=0;
   anode->center = (struct data_struct *)malloc(sizeof(struct data_struct));
   anode->maxRadius = 0;
   for (i=0;i<3;i++){
-    anode->max[i] = arrayMax[i];
-    anode->min[i] = arrayMin[i];
+    //anode->max[i] = arrayMax[i];
+    //anode->min[i] = arrayMin[i];
     anode->center->xyz[i] = (anode->max[i] + anode->min[i])/2;
     radToMax += (anode->center->xyz[i]-anode->max[i])*(anode->center->xyz[i]-anode->max[i]);
     radToMin += (anode->center->xyz[i]-anode->min[i])*(anode->center->xyz[i]-anode->min[i]);

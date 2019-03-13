@@ -1,6 +1,6 @@
 #include "headerFuncs.h"
 
-struct data_struct * globalSort(void * varray, int *num, int colIndex){
+struct data_struct * globalSort(void * varray, int *num, int colIndex, int *globalNum){
   struct data_struct* array  = (struct data_struct *) varray;
   int i;
   do_sort(array, *num, colIndex);
@@ -13,6 +13,9 @@ struct data_struct * globalSort(void * varray, int *num, int colIndex){
   *num =total_recv_counts;
   //array = recv_array;
   do_sort(recv_array, *num, colIndex);
+  *globalNum = 0;
+  for (i=0; i<num_ranks*num_ranks;i++)
+    *globalNum+=allCounts[i];
   
   return recv_array;
   
