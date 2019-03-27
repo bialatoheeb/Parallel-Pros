@@ -37,10 +37,10 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
     //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", num-1, array[num-1].xyz[0], array[num-1].xyz[1], array[num-1].xyz[2]);
     //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", 0, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
     //}
-    getNodeGlobal(num, anode, globalNum);
+    //getNodeGlobal(num, anode, globalNum);
     
     //printf("colIndex: %3u\n",colIndex);
-    printNodeGlobal(anode);
+    //printNodeGlobal(anode);
     
     
     return splitRanks(array, num, anode, colIndex);
@@ -51,7 +51,7 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
     //  printf("Max: (%15Lf,%15Lf,%15Lf);\n Min: (%15Lf,%15Lf,%15Lf);\n", 
     //	   anode->max[0],anode->max[1],anode->max[2],
     //	   anode->min[0],anode->min[1],anode->min[2]);
-    //getMaxMin(array, num, colIndex, anode->max, anode->min); //arrayMin);
+    getMaxMin(array, num, -1, anode->max, anode->min); //arrayMin);
     //if (my_global_rank == 1)
     //  printf("Max: (%15Lf,%15Lf,%15Lf);\n Min: (%15Lf,%15Lf,%15Lf);\n", 
     //	   anode->max[0],anode->max[1],anode->max[2],
@@ -62,10 +62,11 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
     //getNodeGlobal(anode->max, anode->min, num, anode);
     anode->num_below = num;
     anode->center = array;
+    
+    //printf("colIndex: %3u\n",colIndex);
+    //printNodeGlobal(anode);
     return anode;
     
-    printf("colIndex: %3u\n",colIndex);
-    printNodeGlobal(anode);
     //if (my_global_rank == 2){
     //  printf("before global Sort\n");
     //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", num-1, array[num-1].xyz[0], array[num-1].xyz[1], array[num-1].xyz[2]);

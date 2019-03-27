@@ -20,17 +20,41 @@ struct node{
   struct data_struct *center; //leafValue;
 };
 
+struct Gnode{
+  long double max[3], min[3], maxRadius;
+  struct Gnode *left, *right, *parent;
+  int this_rank, num_below, assigned;
+  struct data_struct *center; //leafValue;
+};
+
 
 //MPI_Comm MPI_COMM_WORLD;
-MPI_Comm MPI_LOCAL_COMM, MPI_TEMP_COMM;
+MPI_Comm MPI_LOCAL_COMM, MPI_TEMP_COMM, dup_comm_world;
+MPI_Group world_group;
 MPI_Datatype array_type;
-MPI_Datatype ld_type;
-int num_ranks;
+MPI_Datatype ld_type, li_type;
+int num_ranks, global_num_ranks;
 int my_rank, my_global_rank;
 int timePrint;
 
+void compareFunc(struct data_struct*, struct data_struct, int);
+struct Gnode * buildEmptyGtree(struct Gnode *, int, int);
+void getGNode(void *);
+void printGNode(void *);
+void printGTree(void *);
+void getSendSize(struct Gnode *, double, struct data_struct *, int, int *);
+void initAssigned(struct Gnode *);
+void getSendSize1(struct Gnode *, double, struct data_struct *, int, int *);
+void getSendSize1Target(struct Gnode *, double, struct data_struct, int *);
+int sendSizeTest(struct node *, double, struct data_struct *, int);
+void searchTest(struct data_struct *,struct data_struct*, int);
+void compareTargets(struct data_struct *, struct data_struct *, int, int);
+void compareTargetsLocalTree(struct node *, struct data_struct *, int);
+void globalTreeMaster(struct Gnode *, struct node *);
 
 struct data_struct* globalSort(void *, int *, int, int *);
+
+int localSearch(struct node *, double, struct data_struct );
 
 void getMaxMin(void*, int, int, long double*, long double*);
 void getLargestDimension(long double *, long double *, int *);

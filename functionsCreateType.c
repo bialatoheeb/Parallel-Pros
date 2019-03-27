@@ -22,4 +22,8 @@ void create_array_datatype(){
   // Define the new data_type of our struct and commit
   MPI_Type_create_struct(2, data_length, displ, data_type, &array_type);
   MPI_Type_commit(&array_type);
+  
+  MPI_Type_create_resized(MPI_LONG_INT, 0, sizeof(long int), &li_type);
+  MPI_Type_commit(&li_type);
 }
+

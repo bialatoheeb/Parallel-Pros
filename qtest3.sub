@@ -2,9 +2,9 @@
 
 
 #$ -N main
-#$ -pe mpi 16
+#$ -pe mpi 9
 #$ -q amd.q
 
 
-mpirun -np $NSLOTS $HOME/COMS7900/clone/main  1000 > $HOME/COMS7900/clone/output.txt
+mpirun -np $NSLOTS $HOME/COMS7900/main  10000 300 > $HOME/COMS7900/output.txt
 

@@ -78,6 +78,8 @@ void readFromFileAllRead(int sizeOnAll, void* varray ){
   }
   //printf("rank: %u, size: %lu; file_no: %lu; startline: %lu; offset: %lu\n", my_rank, size, file_no, startline, offset);
   sprintf(fname,"/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", file_no);
+  //file_no = 0;
+  //sprintf(fname,"/home/gst2d/COMS7900/sample/s%u.bin", 0);
   
   if ((fp = fopen(fname, "rb")) == NULL){
     printf("File DNE: %s\n", fname);
@@ -98,13 +100,15 @@ void readFromFileAllRead(int sizeOnAll, void* varray ){
       fread(&temp.xyz[0],sizeof(long double),1,fp); 
       fread(&temp.xyz[1],sizeof(long double),1,fp); 
       fread(&temp.xyz[2],sizeof(long double),1,fp); 
-      //printf("temp: %Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", temp.num, temp.xyz[0], temp.xyz[1], temp.xyz[2]);
+      //printf("temp: %Lu\t%15Lf\t%15Lf\t%15Lf\n", temp.num, temp.xyz[0], temp.xyz[1], temp.xyz[2]);
       
       array[num_of_reads].num = temp.num;
       array[num_of_reads].xyz[0] = temp.xyz[0];
       array[num_of_reads].xyz[1] = temp.xyz[1];
       array[num_of_reads].xyz[2] = temp.xyz[2];
-      //printf("array: %Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[i].nu
+      //if (my_global_rank == 2)
+      //	printf("array: %Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", array[num_of_reads].num, array[num_of_reads].xyz[0], array[num_of_reads].xyz[1], array[num_of_reads].xyz[2]);
+      //
       num_of_reads++;
     }else{
       sprintf(fname,"/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", ++file_no);
