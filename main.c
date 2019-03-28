@@ -10,6 +10,7 @@ int main(int argc, char* argv[]) {
   if (argc > 2){
     targetSize = atoi(argv[2]);
   }
+  printf("START\n");
   timePrint = 0;
   int datapoints = atoi(argv[1]);
   int num;
@@ -43,16 +44,17 @@ int main(int argc, char* argv[]) {
   create_array_datatype();
   readFromFileAllRead(datapoints, array );
   
+  printf("num\n");
   localHead = buildTreeGlobal(array, num, &headNode, -1);
   array = localHead->center;
   num = localHead->num_below;
   //buildLocalHead = localHead;
   
+  printf("AFTER GLOBAL TREE BUILD\n");
   //=============================== 
   //BUILD GLOBAL TREE ON RANK ZERO
   //=============================== 
   globalTreeMaster(&Gtree, localHead);
-  
   
   //========================
   //
@@ -66,8 +68,9 @@ int main(int argc, char* argv[]) {
   int mySendSize = 0;
   int totalSendSize = 0;
   struct data_struct* sendArray;//  =
+  struct data_struct* allSendArrays[global_num_ranks];
   readFromFile(fname, targetSize, targetArray );
-
+  
   //========================
   //   GET NUM OF TARGETS FOR EACH RANK
   //========================
@@ -79,12 +82,13 @@ int main(int argc, char* argv[]) {
     //printf("totalSendSize: %d\n",totalSendSize);
    
   }  
-
+  
   //========================
   //   LOCAL TREE BUILD 
   //========================
 
   buildTree(array, num, localHead, -1);
+
   //========================
   //   RANK 0 SENDS NUM OF TARGETS TO OTHER RANKS
   //========================
@@ -95,21 +99,34 @@ int main(int argc, char* argv[]) {
   //   RANK 0 ASSIGNS TARGETS TO OTHER RANKS
   //========================
   if (my_global_rank == 0){
-    mySendSize = sendSize[0];
+    //allSendArrays = (struct data_struct **)(global_num_ranks*sizeof(struct data_struct *));
+    for (i = 0;i<global_num_ranks;i++){
+      allSendArrays[i] = (struct data_struct *) malloc(sendSize[i] * sizeof(struct data_struct)); 
+    }
+    mySendSize = sendSize[0];    
     for (i = 1;i<global_num_ranks;i++){
-      
-      sendArray = (struct data_struct *) malloc(sendSize[i] * sizeof(struct data_struct)); 
-      getSendArray(&Gtree, 0.1, targetArray, targetSize, sendArray, sendSize[i], i);
-      MPI_Send(sendArray, sendSize[i], array_type, i, 0, MPI_COMM_WORLD);
-      free(sendArray);
+      getSendArray(&Gtree, 0.1, targetArray, targetSize, allSendArrays[i], sendSize[i], i);
+      MPI_Send(allSendArrays[i], sendSize[i], array_type, i, 0, MPI_COMM_WORLD);
+      //printf("%d send start\n", i);
+      //sendArray = (struct data_struct *) malloc(sendSize[i] * sizeof(struct data_struct)); 
+      //printf("%d send malloc\n", i);
+      //getSendArray(&Gtree, 0.1, targetArray, targetSize, sendArray, sendSize[i], i);
+      //printf("%d sendArray Gathered\n", i);
+      //for (j=0;j<sendSize[i];j++){
+      //	printf("sendArray[%d]: ", j);
+      //	printf("%Ld\n",sendArray[j].num);
+      //}
+      //MPI_Send(sendArray, sendSize[i], array_type, i, 0, MPI_COMM_WORLD);
+      //printf("%d send MPI\n", i);
+      //free(sendArray);
+      //printf("%d send  Freed\n", i);
     }
     sendArray = (struct data_struct *) malloc(mySendSize * sizeof(struct data_struct)); 
     getSendArray(&Gtree, 0.1, targetArray, targetSize, sendArray, sendSize[0], 0);
     
   }else{
     sendArray = (struct data_struct *) malloc(mySendSize * sizeof(struct data_struct)); 
-    MPI_Recv(sendArray, mySendSize, array_type, 0, 0, MPI_COMM_WORLD, &mystat);
-    
+    MPI_Recv(sendArray, mySendSize, array_type, 0, 0, MPI_COMM_WORLD, &mystat);    
   }
   double radius[3] = {0.01, 0.05, 0.1};
   int localCount = 0, totalCount, tgi = 0, sendi = 0, radi = 0;
@@ -129,6 +146,8 @@ int main(int argc, char* argv[]) {
 	
     }    
   }
+
+  
   if (my_global_rank == 0){
     //printf("totalSendSize: %d\n", totalSendSize);
     MPI_Status stat;
@@ -142,7 +161,7 @@ int main(int argc, char* argv[]) {
     for (i=1;i<global_num_ranks;i++){
       tsendSize[i] = sendSize[i]*4;      
     }
-
+    
     //========================
     //   SUM COUNTS FOR RANK 0
     //========================
@@ -175,8 +194,8 @@ int main(int argc, char* argv[]) {
       }    
       free(radiCounts);
     }
-  }else{
     
+  }else{
     mySendSize *=4;
     
     MPI_Send(radiCounts, mySendSize, li_type, 0, 123, MPI_COMM_WORLD);
