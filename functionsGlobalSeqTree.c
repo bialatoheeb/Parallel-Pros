@@ -7,7 +7,11 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
   //long double *arrayMin = (long double *) malloc(3 * sizeof(long double));
   
   int i,j,k, globalNum;
-  //if (my_global_rank == 1)
+  
+  //char fname[71] = "/home/gst2d/COMS7900/aout.txt";
+  //FILE *fp = fopen(fname, "a");
+  //fclose(fp);
+  printf("INSID EBUILD TREE my_global_rank: %d, BADnum_ranks: %d num: %d\n",my_global_rank,num_ranks, num);
   //  printFile(num, array);
   //if (my_global_rank == 2)
   //  printf("%u\n", num_ranks);
@@ -22,16 +26,30 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
     //	  printf("%5u\t%15Lf\t%15Lf\t\n", i,anode->max[i],anode->min[i]);
     //	}
     //}
+    //fprintf(fp,"GLOBAL TREE my_global_rank: %d, num: %d, num_ranks: %d\n",my_global_rank,num, num_ranks);
+    
+    //printf("BEFORE GET MAX MIN my_global_rank: %d, num: %d\n",my_global_rank,num);
+    if (my_global_rank == 45)
+      printf("MAXMIN\n");
+  
     getMaxMinGlobal(array, num, colIndex, anode->max, anode->min); //arrayMin);
-    
-    
+    //return anode;
+    if (my_global_rank == 45)
+      printf("LARGESTDIM\n");
+  
     getLargestDimensionGlobal(anode->max, anode->min, &colIndex);
     //if (my_global_rank == 2){
     //  printf("before global Sort\n");
     //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", num-1, array[num-1].xyz[0], array[num-1].xyz[1], array[num-1].xyz[2]);
     //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", 0, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
     //}
+    //printf("AFTER getLargestDim my_global_rank: %d, num: %d\n",my_global_rank,num);
+    if (my_global_rank == 45)
+      printf("GLOBALSORT\n");
+  
     array = globalSort(array, &num, colIndex, &globalNum);
+    //printf("AFTER globalSort  my_global_rank: %d, num: %d\n",my_global_rank,num);
+    //return anode;
     //if (my_global_rank == 2){
     //  printf("after global Sort\n");
     //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", num-1, array[num-1].xyz[0], array[num-1].xyz[1], array[num-1].xyz[2]);
@@ -42,6 +60,9 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
     //printf("colIndex: %3u\n",colIndex);
     //printNodeGlobal(anode);
     
+    if (my_global_rank == 45)
+      printf("SPLITRANKS\n");
+  
     
     return splitRanks(array, num, anode, colIndex);
     
@@ -152,6 +173,11 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, long double *arrayMa
   long double *allMin = (long double *) malloc(3 * num_ranks * sizeof(long double));
   
   int i,j,k;
+  //char fname[71] = "/home/gst2d/COMS7900/aout.txt";
+  //FILE *fp = fopen(fname, "a");
+  //printf("maxMinGlobal my_global_rank: %d, num: %d\n",my_global_rank,size);
+  //fclose(fp);
+  //return;
   if (colIndex < 0){
     for (i=0;i<3;i++){
       arrayMax[i] = array[0].xyz[i];
@@ -180,11 +206,14 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, long double *arrayMa
       
     }
   }
+
+  //MPI_Allgather(arrayMax, 3, MPI_LONG_DOUBLE, allMax, 3,MPI_LONG_DOUBLE, MPI_LOCAL_COMM); 
+  //MPI_Allgather(arrayMin, 3, MPI_LONG_DOUBLE, allMin, 3,MPI_LONG_DOUBLE, MPI_LOCAL_COMM); 
+  MPI_Allgather(arrayMax, 3, ld_type, allMax, 3,ld_type, MPI_LOCAL_COMM); 
+  MPI_Allgather(arrayMin, 3, ld_type, allMin, 3,ld_type, MPI_LOCAL_COMM); 
   
   
-  MPI_Allgather(arrayMax, 3, MPI_LONG_DOUBLE, allMax, 3,MPI_LONG_DOUBLE, MPI_LOCAL_COMM); 
-  MPI_Allgather(arrayMin, 3, MPI_LONG_DOUBLE, allMin, 3,MPI_LONG_DOUBLE, MPI_LOCAL_COMM); 
-    
+  //fprintf(fp,"AFTER MPI maxMinGlobal my_global_rank: %d, num: %d\n",my_global_rank,size);
   if (colIndex < 0){
     for (i=0;i<3;i++){
       arrayMax[i] = allMax[i];
@@ -222,7 +251,10 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, long double *arrayMa
 struct node * splitRanks(void *varray, int num, void *vnode, int colIndex){
   struct data_struct* array  = (struct data_struct *)varray;
   struct node *anode = (struct node *)vnode;
-  
+  char fname[71] = "/home/gst2d/COMS7900/aout.txt";
+  //FILE *fp = fopen(fname, "a");
+  //fprintf(fp,"splitRanks: my_global_rank: %d, num: %d\n",my_global_rank,num);
+  //fclose(fp);
 
   int i = 0, j, *size;
   if (num_ranks > 1){

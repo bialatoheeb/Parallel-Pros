@@ -41,9 +41,17 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //
   //============================
 
-
-  MPI_Allgather(nodeDivL, num_ranks+2,MPI_LONG_DOUBLE, LDivinfo,num_ranks+2,MPI_LONG_DOUBLE, MPI_LOCAL_COMM); 
-
+  //printf("BEFORE ALL GATHER my_global_rank: %d, num: %d\n",my_global_rank,num);
+  if (my_global_rank >= 45 && my_global_rank <= 48){
+    MPI_Comm_size(MPI_LOCAL_COMM, &i);
+    printf("BEFOREFIRSTGATHER num_ranks: %d, i: %d, my_rank: %d\n", num_ranks, i, my_rank);
+  }
+  MPI_Allgather(nodeDivL, num_ranks+2,ld_type, LDivinfo,num_ranks+2,ld_type, MPI_LOCAL_COMM); 
+  if (my_global_rank >= 45 && my_global_rank <= 48){
+    MPI_Comm_size(MPI_LOCAL_COMM, &i);
+    printf("AFTERFIRSTGATHER num_ranks: %d, i: %d, my_rank: %d\n", num_ranks, i, my_rank);
+  }
+  //printf("AFTER ALL GATHER my_global_rank: %d, num: %d\n",my_global_rank,num);
   //============================
   //
   // Get totalMax 
@@ -107,8 +115,12 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //============================
   
   //printf("rank: %u, getCount\n", my_rank);
-  
+  if (my_global_rank >= 45 && my_global_rank <= 48){
+    MPI_Comm_size(MPI_LOCAL_COMM, &i);
+    printf("GETCOUNTS num_ranks: %d, i: %d, my_rank: %d\n", num_ranks, i, my_rank);
+  }
   getCounts(num, colIndex, array, L, totalCount, allCounts);
+  //printf("AFTER GET COUNTS my_global_rank: %d, num: %d\n",my_global_rank,num);
   checkBalance(&balanced, totalCount);
   //endTime[0] = timestamp() - startTime[0];
   //MPI_Reduce(&endTime[0], &startTime[0], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_LOCAL_COMM);
@@ -129,7 +141,11 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //printf("Before AdjustL rank: %u\n", my_rank);
   
   //startTime[1] = 0.0; //timestamp();
+  //printf("BEFORE ADJUST my_global_rank: %d, num: %d\n",my_global_rank,num);
+  if (my_global_rank == 45)
+    printf("ADJUSTL\n");
   adjustL(num, colIndex, array, L, allCounts, totalCount, &balanced);  
+  //printf("AFTER ADJUST my_global_rank: %d, num: %d\n",my_global_rank,num);
   //endTime[1] = timestamp() - startTime[1];
   //MPI_Reduce(&endTime[1], &startTime[1], 1, MPI_DOUBLE, MPI_MAX, 0, MPI_LOCAL_COMM);
   //if (my_rank == 0  && timePrint == 1)
@@ -162,8 +178,13 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
   int* allCounts = (int *)vallCounts; //malloc(num_ranks*n
   int* totalCount = (int *) vtotalCount; //malloc((num_ranks)*sizeof(int));
   int* balanced = (int *) vbalanced;
-  if (*balanced != 0)
+  //printf("INSIDE ADJUST my_global_rank: %d, num: %d\n",my_global_rank,num);
+  if (*balanced != 0){
+    //printf("NOT BALANCED my_global_rank: %d, num: %d\n",my_global_rank,num);
     return;
+  }
+  //printf("AFTER BALANCED my_global_rank: %d, num: %d\n",my_global_rank,num);
+  
   int sDiff[num_ranks];
   int prevsDiff[num_ranks];
   long double rangeL[num_ranks];
@@ -183,7 +204,7 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
   MPI_Status status;
   int total=0,K;
   int i, j=0, k=0, D, startIndex = 1, totalIterations;
- 
+  //printf("AFTER VARIABLE DECLARATIONS\n");
   //============================
   //
   // Get Required variables
@@ -199,12 +220,12 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
     smallestDiffL[i] = L[i];
     adjustCount[i] = 0;
     percentRange[i] = 0.1;
-    allSmallest[i] = 0;
+    //allSmallest[i] = 0;
     if (i > 0 )
       rangeL[i] = L[i+1] - L[i-1];
   }
   mysmallest = 0;
-   
+  //printf("AFTER INITIALIZE  my_global_rank: %d, num: %d\n",my_global_rank,num);
   //============================
   //
   // Get smallest diff between vals
@@ -212,14 +233,23 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
   //============================
   
   mysmallest = array[num-1].xyz[colIndex] - array[0].xyz[colIndex];
+  //printf("BEFORE SMALL  my_global_rank: %d, num: %d, mysmallest: %Lf\n",my_global_rank,num, mysmallest);
   for (i=0;i<num-1; i++){
     smallest = array[i+1].xyz[colIndex] - array[i].xyz[colIndex];
     if (mysmallest > smallest && smallest > 0)
       mysmallest = smallest;
   }
-  //smallest = mysmallest;
-  MPI_Allreduce(&mysmallest, &smallest, 1, MPI_LONG_DOUBLE, MPI_MIN, MPI_LOCAL_COMM);
-  
+  //printf("AFTER SMALL  my_global_rank: %d, num: %d, mysmallest: %Lf\n",my_global_rank,num, mysmallest);
+  smallest = mysmallest;
+  //MPI_Allreduce(&mysmallest, &smallest, 1, ld_type, MPI_MIN, MPI_LOCAL_COMM);
+  //printf("BEFORE ALL GATHER my_rank: %d\n", my_rank);
+  MPI_Allgather(&mysmallest, 1, ld_type, allSmallest, 1, ld_type, MPI_LOCAL_COMM);
+  //printf("AFTER ALL GATHER my_rank: %d\n", my_rank);
+  smallest = allSmallest[0];
+  for (i=1;i<num_ranks;i++){
+    if (allSmallest[i] < smallest)
+      smallest = allSmallest[i];
+  }
   //============================
   //
   // Adjust Each L until "Balanced"
@@ -229,12 +259,13 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
   startIndex = 1;
   while (*balanced == 0){
     
+    //printf("ITERTAION: %d ,my_rank: %d", totalIterations, my_rank);
     *balanced = 1;
     for (i=startIndex; i<num_ranks;i++){ //check each Li for i = 1-> N-2
       if (fabsl(sDiff[i-1]) > 0.10*K){
 	*balanced = 0;
 	// Use range > 0
-	if (rangeL[i] > 0)
+	if (rangeL[i] > smallest)
 	  myrange = rangeL[i];
 	else
 	  myrange = totalRange;
@@ -264,21 +295,26 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
 	
 	// Fix if Li is out of range
 	for (j=0;j<num_ranks-1;j++){
-	  if (L[i] > L[i+1])
-	    L[i+1] = L[i];
+	  if (L[j] > L[j+1])
+	    L[j+1] = L[j];
 	} 
 	for (j=num_ranks;j>1;j--){
-	  if (L[i] < L[i-1])
-	    L[i-1] = L[i];
+	  if (L[j] < L[j-1])
+	    L[j-1] = L[j];
 	}
 	
 	// getCounts
 	
 	getCounts(num, colIndex, array, L, totalCount, allCounts);
-	//if (my_global_rank == 2){
+	//if (my_global_rank == 0){
 	//  //printf("HERE\n");
-	//  printNodeL(L);
-	//  printCount(allCounts);
+	//  printf("startIndex: %d, L[%d]: %1.4Lf, %d, %d, %d\n", startIndex, i, L[i], totalCount[i-1], totalCount[i],totalCount[i+1]);
+	//  printf("myrange: %1.5Lf", myrange);
+	//  printf("myrange: %1.5f", myrange);
+	//  printf(", percentRange: %1.5f", percentRange[i]);
+	//  printf(", myrange*percentRange[i]: %1.5Lf\n", myrange*percentRange[i]);
+	//  //printNodeL(L);
+	//  //printCount(allCounts);
 	//}
 	
 	// Set new Vars
@@ -321,7 +357,7 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
   MPI_Bcast(&smallestDiffBool, 1, MPI_INT, 0, MPI_LOCAL_COMM);
   //printf("rank: %u; smallestDiffBool: %u\n",my_rank,smallestDiffBool);
   if (smallestDiffBool == 0){
-    MPI_Bcast(L, num_ranks, MPI_LONG_DOUBLE, 0, MPI_LOCAL_COMM);
+    MPI_Bcast(L, num_ranks, ld_type, 0, MPI_LOCAL_COMM);
     getCounts(num, colIndex, array, L, totalCount, allCounts);
   }
   
@@ -343,7 +379,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   // Counts of each division on each node
   //
   //============================
-
+  //printf("GET COUNTS my_rank: %d", my_rank);
   j = 0;
   for (i=0;i<num_ranks;i++){
     nodeCount[i] = 0;
@@ -428,6 +464,10 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   //  MPI_Barrier(MPI_LOCAL_COMM);
   //  if (my_rank == i){
   //    printf("my_rank: %u\n", my_rank);
+  if (my_global_rank >= 45 && my_global_rank <= 48){
+    MPI_Comm_size(MPI_LOCAL_COMM, &i);
+    printf("BEFOREBISECTION num_ranks: %d, i: %d, my_rank: %d\n", num_ranks, i, my_rank);
+  }
   for (k=1;k<num_ranks;k++){
     //if (my_rank == i)
     //  printf("%3s\t%3s\t%3s\t%3s\t%15s\t%15s\t%15s\n","k","min","mid","max","a[mid-1]","L[k]","a[mid]");
@@ -479,10 +519,13 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   // share nodeCounts with all nodes
   //
   //============================
-
-  
+  if (my_global_rank >= 45 && my_global_rank <= 48){
+    MPI_Comm_size(MPI_LOCAL_COMM, &i);
+    printf("BEFOREALLGATHER num_ranks: %d, i: %d, my_rank: %d\n", num_ranks, i, my_rank);
+  }
   MPI_Allgather(nodeCount, num_ranks,MPI_INT, allCounts,num_ranks,MPI_INT, MPI_LOCAL_COMM);
-  
+  if (my_global_rank == 45)
+    printf("AFTERALLGATHER\n");
   //============================
   //
   // Get totalCounts
@@ -494,7 +537,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   for (i=0;i<num_ranks;i++){
     for (j=0;j<num_ranks;j++){
       //printf("rank: %u; allCounts[%u]: %Lu\n",my_rank, i*num_ranks + j,allCounts[i*num_ranks + j]);
-      totalCount[j] += allCounts[i*num_ranks + j];
+      totalCount[j] +=  allCounts[i*num_ranks + j];
     }
   
   }

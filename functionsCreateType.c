@@ -25,5 +25,8 @@ void create_array_datatype(){
   
   MPI_Type_create_resized(MPI_LONG_INT, 0, sizeof(long int), &li_type);
   MPI_Type_commit(&li_type);
+
+  MPI_Type_create_resized(MPI_LONG_DOUBLE, 0, sizeof(long double), &ld_type);
+  MPI_Type_commit(&ld_type);
 }
 

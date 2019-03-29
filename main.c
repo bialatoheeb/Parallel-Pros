@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
   if (argc > 2){
     targetSize = atoi(argv[2]);
   }
-  printf("START\n");
+  //printf("START\n");
   timePrint = 0;
   int datapoints = atoi(argv[1]);
   int num;
@@ -25,11 +25,11 @@ int main(int argc, char* argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   global_num_ranks = num_ranks;
   my_global_rank = my_rank;
-  j = MPI_Comm_dup(MPI_COMM_WORLD, &MPI_LOCAL_COMM);
+  //j = MPI_Comm_dup(MPI_COMM_WORLD, &MPI_LOCAL_COMM);
   
-  //j = MPI_Comm_dup(MPI_COMM_WORLD, &dup_comm_world); //&MPI_LOCAL_COMM);
-  //MPI_Comm_group( dup_comm_world, &world_group );
-  //MPI_Comm_create( dup_comm_world, world_group, &MPI_LOCAL_COMM );
+  j = MPI_Comm_dup(MPI_COMM_WORLD, &dup_comm_world); //&MPI_LOCAL_COMM);
+  MPI_Comm_group( dup_comm_world, &world_group );
+  MPI_Comm_create( dup_comm_world, world_group, &MPI_LOCAL_COMM );
   if (my_rank == num_ranks-1){
     num = (int)datapoints/num_ranks + datapoints%num_ranks;
   }else{
@@ -44,18 +44,27 @@ int main(int argc, char* argv[]) {
   create_array_datatype();
   readFromFileAllRead(datapoints, array );
   
-  printf("num\n");
+  printf("AFTER FILE READ\n");
+  //printf("START my_global_rank\n",my_global_rank);
   localHead = buildTreeGlobal(array, num, &headNode, -1);
   array = localHead->center;
   num = localHead->num_below;
   //buildLocalHead = localHead;
   
-  printf("AFTER GLOBAL TREE BUILD\n");
+  printf("AFTER LOCAL HEAD\n");
+  //MPI_Finalize();
+  //return 0;
+  //MPI_Finalize();
+  //return 0;
+  //printf("AFTER GLOBAL TREE BUILD my_global_rank\n",my_global_rank);
+  //MPI_Finalize();
+  //return 0;
+  
   //=============================== 
   //BUILD GLOBAL TREE ON RANK ZERO
   //=============================== 
   globalTreeMaster(&Gtree, localHead);
-  
+  printf("AFTER GLOBAL TREE\n");
   //========================
   //
   //                                           TARGETS SECTION
@@ -70,7 +79,7 @@ int main(int argc, char* argv[]) {
   struct data_struct* sendArray;//  =
   struct data_struct* allSendArrays[global_num_ranks];
   readFromFile(fname, targetSize, targetArray );
-  
+  printf("AFTER TARGET READ\n");
   //========================
   //   GET NUM OF TARGETS FOR EACH RANK
   //========================
@@ -82,19 +91,19 @@ int main(int argc, char* argv[]) {
     //printf("totalSendSize: %d\n",totalSendSize);
    
   }  
-  
+  printf("AFTER SEND SIZE\n");
   //========================
   //   LOCAL TREE BUILD 
   //========================
 
   buildTree(array, num, localHead, -1);
-
+  printf("AFTER LOCAL TREE\n");
   //========================
   //   RANK 0 SENDS NUM OF TARGETS TO OTHER RANKS
   //========================
 
   MPI_Scatter(sendSize, 1, MPI_INT, &mySendSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  
+  printf("AFTER SEND SIZE\n");
   //========================
   //   RANK 0 ASSIGNS TARGETS TO OTHER RANKS
   //========================
@@ -128,6 +137,7 @@ int main(int argc, char* argv[]) {
     sendArray = (struct data_struct *) malloc(mySendSize * sizeof(struct data_struct)); 
     MPI_Recv(sendArray, mySendSize, array_type, 0, 0, MPI_COMM_WORLD, &mystat);    
   }
+  printf("AFTER ASSIGN TARGETS\n");
   double radius[3] = {0.01, 0.05, 0.1};
   int localCount = 0, totalCount, tgi = 0, sendi = 0, radi = 0;
   long int *radiCounts = (long int *) malloc(4*mySendSize*sizeof(long int)); //[id,r1,r2,r3...]
@@ -147,7 +157,7 @@ int main(int argc, char* argv[]) {
     }    
   }
 
-  
+  printf("AFTER LOCAL COUNT\n");
   if (my_global_rank == 0){
     //printf("totalSendSize: %d\n", totalSendSize);
     MPI_Status stat;
