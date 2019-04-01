@@ -1,0 +1,10 @@
+!#/bin/bash
+
+
+#$ -N main
+#$ -pe mpi 150
+#$ -q amd.q
+
+
+mpirun -np $NSLOTS $HOME/COMS7900/clone2/main  10000000 100000 > $HOME/COMS7900/clone2/output.txt
+
