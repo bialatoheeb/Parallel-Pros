@@ -15,6 +15,7 @@ void readFromFile(char* fname, const int size, void* varray ){
   char * line = NULL;
   size_t len=0;
   ssize_t read;
+  printf("%s\n",fname);
   if ((fp = fopen(fname, "rb")) != NULL){
     while(!feof(fp) && i < size){
       //fscanf(fp, "%lu  %Lf  %Lf %Lf\n", &temp.num,&temp.xyz[0], &temp.xyz[1], &temp.xyz[2]);

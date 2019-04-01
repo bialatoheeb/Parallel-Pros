@@ -3,30 +3,20 @@
 struct data_struct * globalSort(void * varray, int *num, int colIndex, int *globalNum){
   struct data_struct* array  = (struct data_struct *) varray;
   int i;
-  // printf("INSIDE GLOBAL\n");
-  //char fname[71] = "/home/gst2d/COMS7900/aout.txt";
-  //FILE *fp = fopen(fname, "a");
-  //fprintf(fp,"globalSort my_global_rank: %d, num: %d\n",my_global_rank,*num);
-  if (my_global_rank == 45)
-    printf("DOSORT\n");
   do_sort(array, *num, colIndex);
   
   // BALANCE
-  if (my_global_rank == 45)
-    printf("GETALLCOUNT\n");
   int* allCounts = (int *) malloc(num_ranks*num_ranks*sizeof(int));
+  printf("LOCALSORT1%d %d\n", my_rank, my_global_rank);
   getallCount(*num, colIndex, array, allCounts); 
+  printf("AFTERGETCOUNT%d %d\n", my_rank, my_global_rank);
   
   //printCount(allCounts);
-  if (my_global_rank == 45)
-    printf("ALLTOALL\n");
   int total_recv_counts;  
   struct data_struct *recv_array = AllToAllSend(array, &total_recv_counts, allCounts);
-  
+  printf("AFTERALLTOALLSEND%d %d\n", my_rank, my_global_rank);
   *num =total_recv_counts;
   //array = recv_array;
-  if (my_global_rank == 45)
-    printf("DOSORT2\n");
   do_sort(recv_array, *num, colIndex);
   *globalNum = 0;
   for (i=0; i<num_ranks*num_ranks;i++)

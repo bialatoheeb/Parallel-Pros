@@ -2,7 +2,7 @@
 
 
 #$ -N main
-#$ -pe mpi 9
+#$ -pe mpi 99
 #$ -q amd.q
 
 

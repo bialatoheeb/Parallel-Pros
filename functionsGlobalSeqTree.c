@@ -7,109 +7,28 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
   //long double *arrayMin = (long double *) malloc(3 * sizeof(long double));
   
   int i,j,k, globalNum;
-  
-  //char fname[71] = "/home/gst2d/COMS7900/aout.txt";
-  //FILE *fp = fopen(fname, "a");
-  //fclose(fp);
-  printf("INSID EBUILD TREE my_global_rank: %d, BADnum_ranks: %d num: %d\n",my_global_rank,num_ranks, num);
-  //  printFile(num, array);
-  //if (my_global_rank == 2)
-  //  printf("%u\n", num_ranks);
-  
+  printf("BUILDTREEGLOBAL%d %d\n", num, my_global_rank);
   if (num_ranks > 1){
     //Find biggest Dimension
     // BINARY SEARCH FOR MAX AND MIN
-    //if (my_global_rank == 0){
-    //	printf("%5s\t%15s\t%15s\t\n", "COL","MAX","MIN");
-    //	for (i=0;i<3;i++){
-    //	  //printf("%5u\t%15Lf\t%15Lf\t\n", i,arrayMax[i],arrayMin[i]);
-    //	  printf("%5u\t%15Lf\t%15Lf\t\n", i,anode->max[i],anode->min[i]);
-    //	}
-    //}
-    //fprintf(fp,"GLOBAL TREE my_global_rank: %d, num: %d, num_ranks: %d\n",my_global_rank,num, num_ranks);
-    
-    //printf("BEFORE GET MAX MIN my_global_rank: %d, num: %d\n",my_global_rank,num);
-    if (my_global_rank == 45)
-      printf("MAXMIN\n");
-  
     getMaxMinGlobal(array, num, colIndex, anode->max, anode->min); //arrayMin);
-    //return anode;
-    if (my_global_rank == 45)
-      printf("LARGESTDIM\n");
-  
+    printf("MAXMIN%d %d\n", my_rank, my_global_rank);
     getLargestDimensionGlobal(anode->max, anode->min, &colIndex);
-    //if (my_global_rank == 2){
-    //  printf("before global Sort\n");
-    //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", num-1, array[num-1].xyz[0], array[num-1].xyz[1], array[num-1].xyz[2]);
-    //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", 0, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
-    //}
-    //printf("AFTER getLargestDim my_global_rank: %d, num: %d\n",my_global_rank,num);
-    if (my_global_rank == 45)
-      printf("GLOBALSORT\n");
-  
+    printf("LARGESTDIM%d %d\n", my_rank, my_global_rank);
     array = globalSort(array, &num, colIndex, &globalNum);
-    //printf("AFTER globalSort  my_global_rank: %d, num: %d\n",my_global_rank,num);
-    //return anode;
-    //if (my_global_rank == 2){
-    //  printf("after global Sort\n");
-    //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", num-1, array[num-1].xyz[0], array[num-1].xyz[1], array[num-1].xyz[2]);
-    //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", 0, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
-    //}
-    //getNodeGlobal(num, anode, globalNum);
-    
-    //printf("colIndex: %3u\n",colIndex);
-    //printNodeGlobal(anode);
-    
-    if (my_global_rank == 45)
-      printf("SPLITRANKS\n");
-  
-    
+    printf("GLOBALSORT%d %d\n", my_rank, my_global_rank);
     return splitRanks(array, num, anode, colIndex);
     
     //return;
   }else{
-    //if (my_global_rank == 1)
-    //  printf("Max: (%15Lf,%15Lf,%15Lf);\n Min: (%15Lf,%15Lf,%15Lf);\n", 
-    //	   anode->max[0],anode->max[1],anode->max[2],
-    //	   anode->min[0],anode->min[1],anode->min[2]);
     getMaxMin(array, num, -1, anode->max, anode->min); //arrayMin);
-    //if (my_global_rank == 1)
-    //  printf("Max: (%15Lf,%15Lf,%15Lf);\n Min: (%15Lf,%15Lf,%15Lf);\n", 
-    //	   anode->max[0],anode->max[1],anode->max[2],
-    //	   anode->min[0],anode->min[1],anode->min[2]);
-    //
-    
-    //getLargestDimension(anode->max, anode->min, &colIndex);
-    //getNodeGlobal(anode->max, anode->min, num, anode);
     anode->num_below = num;
     anode->center = array;
     
-    //printf("colIndex: %3u\n",colIndex);
-    //printNodeGlobal(anode);
     return anode;
-    
-    //if (my_global_rank == 2){
-    //  printf("before global Sort\n");
-    //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", num-1, array[num-1].xyz[0], array[num-1].xyz[1], array[num-1].xyz[2]);
-    //  printf("%Lu\t%0.15Lf\t%0.15Lf\t%0.15Lf\n", 0, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
-    //}
-    do_sort(array, num, colIndex);
     
     
   }
-    //printf("colUIndex: %u\n", colIndex);
-    
-    // Sort Along Dimension
-    //do_sort(array, num, colIndex);
-    // Calculate node values
-  
-    
-    //printf("\n\n=========\nNODE\n");
-    //
-    //printf("beforePRINT\n");
-    //printNode(head);
-    
-  
 }
 
 void getNodeGlobal(int num, void *vnode, int globalNum){
@@ -173,11 +92,6 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, long double *arrayMa
   long double *allMin = (long double *) malloc(3 * num_ranks * sizeof(long double));
   
   int i,j,k;
-  //char fname[71] = "/home/gst2d/COMS7900/aout.txt";
-  //FILE *fp = fopen(fname, "a");
-  //printf("maxMinGlobal my_global_rank: %d, num: %d\n",my_global_rank,size);
-  //fclose(fp);
-  //return;
   if (colIndex < 0){
     for (i=0;i<3;i++){
       arrayMax[i] = array[0].xyz[i];
@@ -209,11 +123,10 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, long double *arrayMa
 
   //MPI_Allgather(arrayMax, 3, MPI_LONG_DOUBLE, allMax, 3,MPI_LONG_DOUBLE, MPI_LOCAL_COMM); 
   //MPI_Allgather(arrayMin, 3, MPI_LONG_DOUBLE, allMin, 3,MPI_LONG_DOUBLE, MPI_LOCAL_COMM); 
-  MPI_Allgather(arrayMax, 3, ld_type, allMax, 3,ld_type, MPI_LOCAL_COMM); 
-  MPI_Allgather(arrayMin, 3, ld_type, allMin, 3,ld_type, MPI_LOCAL_COMM); 
+  MPI_Allgather(arrayMax, 3, ld_type, allMax, 3,ld_type, myCommCollection->localcomm); 
+  MPI_Allgather(arrayMin, 3, ld_type, allMin, 3,ld_type, myCommCollection->localcomm); 
   
   
-  //fprintf(fp,"AFTER MPI maxMinGlobal my_global_rank: %d, num: %d\n",my_global_rank,size);
   if (colIndex < 0){
     for (i=0;i<3;i++){
       arrayMax[i] = allMax[i];
@@ -248,58 +161,114 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, long double *arrayMa
 
 }
 
+//struct node * splitRanks(void *varray, int num, void *vnode, int colIndex){
+//  struct data_struct* array  = (struct data_struct *)varray;
+//  struct node *anode = (struct node *)vnode;
+//  char fname[71] = "/home/gst2d/COMS7900/aout.txt";
+//  //FILE *fp = fopen(fname, "a");
+//  //fprintf(fp,"splitRanks: my_global_rank: %d, num: %d\n",my_global_rank,num);
+//  //fclose(fp);
+//
+//  int i = 0, j, *size;
+//  if (num_ranks > 1){
+//    anode->left = (struct node *)malloc(sizeof(struct node));
+//    anode->right = (struct node *)malloc(sizeof(struct node));
+//    if (colIndex >= 0){
+//      for (i=0;i<3;i++){
+//	//if (colIndex != i){
+//	  anode->left->max[i] = anode->max[i];
+//	  anode->left->min[i] = anode->min[i];
+//	  anode->right->max[i] = anode->max[i];
+//	  anode->right->min[i] = anode->min[i];
+//	  //}
+//      }           
+//    }
+//    if (my_rank < num_ranks/2){
+//      MPI_Comm_split(MPI_LOCAL_COMM,
+//    		     0,
+//    		     my_rank,
+//    		     &MPI_TEMP_COMM);
+//      MPI_Comm_free(&MPI_LOCAL_COMM);
+//      //MPI_LOCAL_COMM = MPI_TEMP_COMM;
+//      j = MPI_Comm_dup(MPI_TEMP_COMM, &MPI_LOCAL_COMM);
+//      MPI_Comm_free(&MPI_TEMP_COMM);
+//      MPI_Comm_size(MPI_LOCAL_COMM, &num_ranks);
+//      //printf("HELLO\n");
+//      MPI_Comm_rank(MPI_LOCAL_COMM, &my_rank);
+//      return buildTreeGlobal(array, num, anode->left, colIndex);
+//      //myFunc();
+//    
+//    }else{
+//      MPI_Comm_split(MPI_LOCAL_COMM,
+//    		     1,
+//    		     my_rank,
+//    		     &MPI_TEMP_COMM);
+//      MPI_Comm_free(&MPI_LOCAL_COMM); 
+//      //MPI_LOCAL_COMM = MPI_TEMP_COMM;
+//      j = MPI_Comm_dup(MPI_TEMP_COMM, &MPI_LOCAL_COMM);
+//      MPI_Comm_free(&MPI_TEMP_COMM);
+//      MPI_Comm_size(MPI_LOCAL_COMM, &num_ranks);
+//      //printf("HELLO\n");
+//      MPI_Comm_rank(MPI_LOCAL_COMM, &my_rank);
+//      return buildTreeGlobal(array, num, anode->right, colIndex);
+//      //myFunc();
+//    
+//    }
+//    
+//    
+//  }
+//
+//
+//}
+
+
 struct node * splitRanks(void *varray, int num, void *vnode, int colIndex){
   struct data_struct* array  = (struct data_struct *)varray;
   struct node *anode = (struct node *)vnode;
   char fname[71] = "/home/gst2d/COMS7900/aout.txt";
-  //FILE *fp = fopen(fname, "a");
-  //fprintf(fp,"splitRanks: my_global_rank: %d, num: %d\n",my_global_rank,num);
-  //fclose(fp);
-
   int i = 0, j, *size;
+  MPI_Barrier(myCommCollection->localcomm);
+  //printf("SPLIT RANKS num_ranks: %d\n",num_ranks);
   if (num_ranks > 1){
     anode->left = (struct node *)malloc(sizeof(struct node));
     anode->right = (struct node *)malloc(sizeof(struct node));
     if (colIndex >= 0){
       for (i=0;i<3;i++){
 	//if (colIndex != i){
-	  anode->left->max[i] = anode->max[i];
-	  anode->left->min[i] = anode->min[i];
-	  anode->right->max[i] = anode->max[i];
-	  anode->right->min[i] = anode->min[i];
-	  //}
+	anode->left->max[i] = anode->max[i];
+	anode->left->min[i] = anode->min[i];
+	anode->right->max[i] = anode->max[i];
+	anode->right->min[i] = anode->min[i];
+	//}
       }           
     }
+    
     if (my_rank < num_ranks/2){
-      MPI_Comm_split(MPI_LOCAL_COMM,
-    		     0,
-    		     my_rank,
-    		     &MPI_TEMP_COMM);
-      MPI_Comm_free(&MPI_LOCAL_COMM);
-      //MPI_LOCAL_COMM = MPI_TEMP_COMM;
-      j = MPI_Comm_dup(MPI_TEMP_COMM, &MPI_LOCAL_COMM);
-      MPI_Comm_free(&MPI_TEMP_COMM);
-      MPI_Comm_size(MPI_LOCAL_COMM, &num_ranks);
-      //printf("HELLO\n");
-      MPI_Comm_rank(MPI_LOCAL_COMM, &my_rank);
+      myCommCollection = myCommCollection->next;
+      MPI_Group_free(&myCommCollection->prev->localgroup);
+      MPI_Comm_free(&myCommCollection->prev->localcomm);
+      free(myCommCollection->prev);
+      if (myCommCollection->this_num_ranks > 1){
+	MPI_Comm_size(myCommCollection->localcomm, &num_ranks);
+	MPI_Comm_rank(myCommCollection->localcomm, &my_rank);
+      }else{
+	num_ranks = myCommCollection->this_num_ranks;
+	my_rank = 0;
+      }
       return buildTreeGlobal(array, num, anode->left, colIndex);
-      //myFunc();
-    
     }else{
-      MPI_Comm_split(MPI_LOCAL_COMM,
-    		     1,
-    		     my_rank,
-    		     &MPI_TEMP_COMM);
-      MPI_Comm_free(&MPI_LOCAL_COMM);
-      //MPI_LOCAL_COMM = MPI_TEMP_COMM;
-      j = MPI_Comm_dup(MPI_TEMP_COMM, &MPI_LOCAL_COMM);
-      MPI_Comm_free(&MPI_TEMP_COMM);
-      MPI_Comm_size(MPI_LOCAL_COMM, &num_ranks);
-      //printf("HELLO\n");
-      MPI_Comm_rank(MPI_LOCAL_COMM, &my_rank);
+      myCommCollection = myCommCollection->next;
+      MPI_Group_free(&myCommCollection->prev->localgroup);
+      MPI_Comm_free(&myCommCollection->prev->localcomm);
+      free(myCommCollection->prev);
+      if (myCommCollection->this_num_ranks > 1){
+	MPI_Comm_size(myCommCollection->localcomm, &num_ranks);
+	MPI_Comm_rank(myCommCollection->localcomm, &my_rank);
+      }else{
+	num_ranks = myCommCollection->this_num_ranks;
+	my_rank = 0;
+      }
       return buildTreeGlobal(array, num, anode->right, colIndex);
-      //myFunc();
-    
     }
     
     

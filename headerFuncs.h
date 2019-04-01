@@ -27,13 +27,23 @@ struct Gnode{
   struct data_struct *center; //leafValue;
 };
 
+struct commgroupcollection{
+  int this_num_ranks;
+  int *ranks;// = {0,0,0};
+  MPI_Group localgroup;
+  MPI_Comm localcomm;
+  struct commgroupcollection * prev;
+  struct commgroupcollection * next;
+
+};
 
 //MPI_Comm MPI_COMM_WORLD;
 MPI_Comm MPI_LOCAL_COMM, MPI_TEMP_COMM, dup_comm_world;
 MPI_Group world_group;
 MPI_Datatype array_type;
 MPI_Datatype ld_type, li_type;
-int num_ranks, global_num_ranks;
+struct commgroupcollection * myCommCollection, * tempCollection;
+int num_ranks, global_num_ranks, numRanges, maxLevel;
 int my_rank, my_global_rank;
 int timePrint;
 
