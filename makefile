@@ -1,5 +1,5 @@
 
-functions= main.o \
+functions= prof_main.o \
 	functionsFiles.o \
 	functionsData.o \
 	functionsSort.o \
@@ -15,7 +15,7 @@ functions= main.o \
 	functionsTrees.o
 
 main: $(functions)
-	mpicc -o main $(functions) -lm
+	mpicc -o prof_main $(functions) -lm
 
 
 %.o: %.c headerFuncs.h

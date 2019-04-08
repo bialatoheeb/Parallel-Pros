@@ -9,8 +9,14 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
 
     // BINARY SEARCH FOR MAX AND MIN
     getMaxMinGlobal(array, num, colIndex, anode->max, anode->min); //arrayMin);
+    if (maxminflag == 1)
+      printf("GETMAXMIN gid%d\n", my_global_rank);
     getLargestDimensionGlobal(anode->max, anode->min, &colIndex);
+    if (largestdimflag == 1)
+      printf("LARGESTDIM gid%d\n", my_global_rank);
     array = globalSort(array, &num, colIndex, &globalNum);
+    if (globalsortflag == 1)
+      printf("GLOBALSORT gid%d\n", my_global_rank);
     return splitRanks(array, num, anode, colIndex);
     
   }else{
@@ -50,7 +56,7 @@ void getNodeGlobal(int num, void *vnode, int globalNum){
 void printNodeGlobal(void *vnode){
   struct node *anode = (struct node *)vnode;
   char fname[20];
-  sprintf(fname,"/home/tab7v/COMS7900/nodes%03u.txt", my_global_rank);
+  sprintf(fname,"/home/gst2d/COMS7900/nodes%03u.txt", my_global_rank);
   FILE *myfile = fopen(fname, "a");
   fprintf(myfile,"LRank: %03u;\nMax: (%15Lf,%15Lf,%15Lf);\nMin: (%15Lf,%15Lf,%15Lf);\nCenter: (%15Lf,%15Lf,%15Lf);\nmaxRadius: %15Lf;\nnum_below: %15u\n========\n",
 	  my_rank,
@@ -111,8 +117,10 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, long double *arrayMa
     }
   }
 
-  MPI_Allgather(arrayMax, 3, ld_type, allMax, 3,ld_type, myCommCollection->localcomm); 
-  MPI_Allgather(arrayMin, 3, ld_type, allMin, 3,ld_type, myCommCollection->localcomm); 
+  //MPI_Allgather(arrayMax, 3, ld_type, allMax, 3,ld_type, myCommCollection->localcomm); 
+  //MPI_Allgather(arrayMin, 3, ld_type, allMin, 3,ld_type, myCommCollection->localcomm); 
+  AllgatherLD(arrayMax, allMax, 3);
+  AllgatherLD(arrayMin, allMin, 3);
   
   
   if (colIndex < 0){
@@ -155,7 +163,6 @@ struct node * splitRanks(void *varray, int num, void *vnode, int colIndex){
   struct node *anode = (struct node *)vnode;
   char fname[71] = "/home/gst2d/COMS7900/aout.txt";
   int i = 0, j, *size;
-  MPI_Barrier(myCommCollection->localcomm);
   if (num_ranks > 1){
     anode->left = (struct node *)malloc(sizeof(struct node));
     anode->right = (struct node *)malloc(sizeof(struct node));
@@ -168,29 +175,31 @@ struct node * splitRanks(void *varray, int num, void *vnode, int colIndex){
       }           
     }
     
-    if (my_rank < num_ranks/2){
-      myCommCollection = myCommCollection->next;
-      MPI_Group_free(&myCommCollection->prev->localgroup);
-      MPI_Comm_free(&myCommCollection->prev->localcomm);
-      free(myCommCollection->prev);
+    
+    
+    if (my_rank < num_ranks/2){      
       if (myCommCollection->this_num_ranks > 1){
-	MPI_Comm_size(myCommCollection->localcomm, &num_ranks);
-	MPI_Comm_rank(myCommCollection->localcomm, &my_rank);
-      }else{
+	myCommCollection = myCommCollection->next;
 	num_ranks = myCommCollection->this_num_ranks;
+	for (i=0;i<myCommCollection->this_num_ranks; i++){
+	  if (my_global_rank == myCommCollection->ranks[i])
+	    my_rank = i;
+	}
+      }else{
+	num_ranks = 1;
 	my_rank = 0;
       }
       return buildTreeGlobal(array, num, anode->left, colIndex);
-    }else{
-      myCommCollection = myCommCollection->next;
-      MPI_Group_free(&myCommCollection->prev->localgroup);
-      MPI_Comm_free(&myCommCollection->prev->localcomm);
-      free(myCommCollection->prev);
+    }else{      
       if (myCommCollection->this_num_ranks > 1){
-	MPI_Comm_size(myCommCollection->localcomm, &num_ranks);
-	MPI_Comm_rank(myCommCollection->localcomm, &my_rank);
-      }else{
+	myCommCollection = myCommCollection->next;
 	num_ranks = myCommCollection->this_num_ranks;
+	for (i=0;i<myCommCollection->this_num_ranks; i++){
+	  if (my_global_rank == myCommCollection->ranks[i])
+	    my_rank = i;
+	}
+      }else{
+	num_ranks = 1;
 	my_rank = 0;
       }
       return buildTreeGlobal(array, num, anode->right, colIndex);

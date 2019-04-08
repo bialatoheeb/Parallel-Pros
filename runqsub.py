@@ -19,15 +19,15 @@ def main():
     stdout_data = p.communicate()[0]
     #p1 = subprocess.Popen(["cat"], ["commoutput.txt"], stdout=subprocess.PIPE)
     #catout = p.communicate()[0]
-    with open("tout.txt") as tfile:
-        content = tfile.read()
+    #with open("tout.txt") as tfile:
+    #    content = tfile.read()
     while (stdout_data != ""):
-        print(content)
+        #print(content)
         print(stdout_data)
         p = subprocess.Popen(["qstat"], stdout=subprocess.PIPE);
         stdout_data = p.communicate()[0]
-        with open("tout.txt") as tfile:
-            content = tfile.read()
+        #with open("tout.txt") as tfile:
+        #    content = tfile.read()
         #p1 = subprocess.Popen(["cat"], ["commoutput.txt"], stdout=subprocess.PIPE)
         #catout = p.communicate()[0]
         time.sleep(3)

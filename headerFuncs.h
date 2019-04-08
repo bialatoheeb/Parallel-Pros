@@ -42,10 +42,19 @@ MPI_Comm MPI_LOCAL_COMM, MPI_TEMP_COMM, dup_comm_world;
 MPI_Group world_group;
 MPI_Datatype array_type;
 MPI_Datatype ld_type, li_type;
+MPI_Status stat;
 struct commgroupcollection * myCommCollection, * tempCollection;
 int num_ranks, global_num_ranks, numRanges, maxLevel;
 int my_rank, my_global_rank;
 int timePrint;
+int maxminflag,largestdimflag,globalsortflag;
+int getbucketsflag,getcountsflag,inAdjustLflag,afterAdjustLflag,Bcastflag;
+
+void my_Bcast_int(void *, int, int);
+void my_Bcast_ld(void *, int, int);
+void AllgatherLD(void *, void *, int);
+void AllgatherINT(void *, void *, int);
+
 
 void compareFunc(struct data_struct*, struct data_struct, int);
 struct Gnode * buildEmptyGtree(struct Gnode *, int, int);
