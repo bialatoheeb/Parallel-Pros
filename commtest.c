@@ -22,8 +22,6 @@ struct commgrouprange{
 struct commgroupcollection{
   int this_num_ranks;
   int *ranks;// = {0,0,0};
-  MPI_Group localgroup;
-  MPI_Comm localcomm;
   struct commgroupcollection * prev;
   struct commgroupcollection * next;
 
@@ -37,6 +35,61 @@ struct commworlds{
   struct commworlds * next;
 
 };
+
+struct data_struct{
+  long int num;
+  long double xyz[3];
+};
+
+
+struct data_struct *  AllToAllSend(void * sends, int  *total_recv_counts, void * rankc){
+
+  int* send_counts;
+  int* recv_counts;
+  int* send_displs;
+  int* recv_displs;
+  int i, j, k;
+  struct data_struct*  send_array  = (struct data_struct *) sends;
+  int * rank_counts = (int *) rankc;
+
+  send_counts = (int *) calloc(num_ranks, sizeof(int));
+  recv_counts = (int *) calloc(num_ranks, sizeof(int));
+  recv_displs = (int *) calloc(num_ranks, sizeof(int));
+  send_displs = (int *) calloc(num_ranks, sizeof(int));
+
+  send_counts[0] = rank_counts[num_ranks*my_rank];
+  *total_recv_counts =  recv_counts[0] = rank_counts[my_rank];
+  for (i=1; i < num_ranks; i++){
+    send_counts[i] = rank_counts[num_ranks*my_rank + i];
+    send_displs[i] = send_displs[i-1] + send_counts[i-1];
+    recv_counts[i] = rank_counts[i*num_ranks + my_rank];
+    recv_displs[i] = recv_displs[i-1] + recv_counts[i-1];
+    (*total_recv_counts) += recv_counts[i];
+  }
+
+  struct data_struct *recv_array = (struct data_struct *) malloc((*total_recv_counts) * sizeof(struct data_struct));
+  for(i=0; i < num_ranks; i++){ // Send and receive for each rank                                                                                                                              
+    if (my_rank ==  i){  // Send sequentially for each rank                                                                                                                                    
+      for (j=0; j < num_ranks; j++){
+        if (j != my_rank){    // Send to others except me                                                                                                                                      
+          if (send_counts[i] > 0) // Send only if send_counts  has something                                                                                                                   
+            MPI_Send(send_array, send_counts[i], array_type,  myCommCollection->ranks[j], j, MPI_COMM_WORLD);
+        }else{
+          for(k =0; k < send_counts[i]; k++){
+            recv_array[send_displs[i] + k] = send_array[k];
+          }
+        }
+      }
+    }else{
+      if (send_counts[i] > 0)
+        MPI_Recv(recv_array[send_displs[i]], send_counts[i], array_type,  myCommCollection->ranks[i], my_rank, MPI_COMM_WORLD, &stat);
+    }
+
+  }
+  free(send_array);
+  return recv_array;
+}
+
 
 //void splitRanks(){
 //  MPI_Barrier(MPI_LOCAL_COMM);
@@ -220,36 +273,36 @@ void createCommWorlds(int mymin, int mymax, struct commworlds *acgrange){
 }
 
 
-void createCommLevel(struct commgroupcollection * cgc, int assigned){
-  int allAssigned,i,j;
-  int * whosAssigned = (int *)malloc(global_num_ranks*sizeof(int));
-  MPI_Allreduce(&assigned, &allAssigned, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD); 
-  if (allAssigned < global_num_ranks){
-    MPI_Allgather(&assigned, 1, MPI_INT, whosAssigned, 1, MPI_INT, MPI_COMM_WORLD);
-    if (assigned == 0){
-      cgc->this_num_ranks = allAssigned;
-      cgc->ranks = (int *)malloc(allAssigned*sizeof(int));
-      j=0;
-      for (i=0;i<allAssigned;i++){
-	if (whosAssigned[i] == 0){
-	  cgc->ranks[j] = i;
-	  j++;
-	}
-      }
-    }
-    MPI_Group_incl( world_group, cgc->this_num_ranks, cgc->ranks, &cgc->localgroup );
-    MPI_Comm_create( dup_comm_world, cgc->localgroup, &cgc->localcomm );
-    if (assigned == 0){
-      //cgc->next = (struct commgroupcollection *)malloc(sizeof( struct commgroupcollection));
-      free(cgc->ranks);
-      MPI_Comm_free(&cgc->localcomm);
-      MPI_Group_free(&cgc->localgroup);
-    }
-  }else{
-    MPI_Group_incl( world_group, cgc->this_num_ranks, cgc->ranks, &cgc->localgroup );
-    MPI_Comm_create( dup_comm_world, cgc->localgroup, &cgc->localcomm );
-  }
-}
+//void createCommLevel(struct commgroupcollection * cgc, int assigned){
+//  int allAssigned,i,j;
+//  int * whosAssigned = (int *)malloc(global_num_ranks*sizeof(int));
+//  MPI_Allreduce(&assigned, &allAssigned, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD); 
+//  if (allAssigned < global_num_ranks){
+//    MPI_Allgather(&assigned, 1, MPI_INT, whosAssigned, 1, MPI_INT, MPI_COMM_WORLD);
+//    if (assigned == 0){
+//      cgc->this_num_ranks = allAssigned;
+//      cgc->ranks = (int *)malloc(allAssigned*sizeof(int));
+//      j=0;
+//      for (i=0;i<allAssigned;i++){
+//	if (whosAssigned[i] == 0){
+//	  cgc->ranks[j] = i;
+//	  j++;
+//	}
+//      }
+//    }
+//    MPI_Group_incl( world_group, cgc->this_num_ranks, cgc->ranks, &cgc->localgroup );
+//    MPI_Comm_create( dup_comm_world, cgc->localgroup, &cgc->localcomm );
+//    if (assigned == 0){
+//      //cgc->next = (struct commgroupcollection *)malloc(sizeof( struct commgroupcollection));
+//      free(cgc->ranks);
+//      MPI_Comm_free(&cgc->localcomm);
+//      MPI_Group_free(&cgc->localgroup);
+//    }
+//  }else{
+//    MPI_Group_incl( world_group, cgc->this_num_ranks, cgc->ranks, &cgc->localgroup );
+//    MPI_Comm_create( dup_comm_world, cgc->localgroup, &cgc->localcomm );
+//  }
+//}
 
 int main(int argc, char* argv[]) {
   int i, j, k, l, mymid, my_sum;
@@ -288,8 +341,11 @@ int main(int argc, char* argv[]) {
   //printf("my_global_rank: %d", my_global_rank);
   //fclose(afile);
   myCommCollection= (struct commgroupcollection *)malloc(sizeof( struct commgroupcollection));
-  MPI_Comm_group( dup_comm_world, &myCommCollection->localgroup );
-  MPI_Comm_create( dup_comm_world, myCommCollection->localgroup, &myCommCollection->localcomm );
+  myCommCollection->this_num_ranks = global_num_ranks;
+  myCommCollection->ranks = (int *)malloc(myCommCollection->this_num_ranks*sizeof(int));
+  for (i=0;i<myCommCollection->this_num_ranks;i++)
+    myCommCollection->ranks[i] = i;
+  
   myCommCollection->next= (struct commgroupcollection *)malloc(sizeof( struct commgroupcollection));
   myCommCollection->next->prev = myCommCollection;
   numRanges = 1;
@@ -299,9 +355,9 @@ int main(int argc, char* argv[]) {
   }else{
     createCommCollections(mymid, global_num_ranks-1, myCommCollection->next);
   }
-  tempCollection = myCommCollection->next;
-  my_sum = 4;
-  MPI_Allreduce(&numRanges, &maxLevel, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+  //tempCollection = myCommCollection->next;
+  //my_sum = 4;
+  //MPI_Allreduce(&numRanges, &maxLevel, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
 
   //printf("num_ranks: %d, my_global_rank: %d, my_rank: %d, my_sum: %d\n", num_ranks, my_global_rank, my_rank, my_sum);
   //splitRanks();
@@ -309,31 +365,32 @@ int main(int argc, char* argv[]) {
   //splitRanks();
   //printf("num_ranks: %d, my_global_rank: %d, my_rank: %d, my_sum: %d\n", num_ranks, my_global_rank, my_rank, my_sum);
   //numRanges = 2;
-  for (i=1;i<maxLevel;i++){
-    if (i > numRanges){
-      createCommLevel(tempCollection, 0);
-      //assigned = 0
-    }else{
-      createCommLevel(tempCollection, 1); 
-      tempCollection = tempCollection->next;
-    }
-    
-    
-    MPI_Barrier(MPI_LOCAL_COMM);
-    //MPI_Allreduce(&num_ranks, &my_sum, 1, MPI_INT, MPI_SUM, MPI_LOCAL_COMM);  
-    
-  }
+  //for (i=1;i<maxLevel;i++){
+  //  if (i > numRanges){
+  //    createCommLevel(tempCollection, 0);
+  //    //assigned = 0
+  //  }else{
+  //    createCommLevel(tempCollection, 1); 
+  //    tempCollection = tempCollection->next;
+  //  }
+  //  
+  //  
+  //  MPI_Barrier(MPI_LOCAL_COMM);
+  //  //MPI_Allreduce(&num_ranks, &my_sum, 1, MPI_INT, MPI_SUM, MPI_LOCAL_COMM);  
+  //  
+  //}
 
   
-  for (i=0;i<numRanges;i++){
-    MPI_Comm_size(myCommCollection->localcomm, &num_ranks);
-    MPI_Comm_rank(myCommCollection->localcomm, &my_rank);
-    MPI_Allreduce(&num_ranks, &my_sum, 1, MPI_INT, MPI_SUM, myCommCollection->localcomm);  
-    printf("i: %d; num_ranks: %d, my_global_rank: %d, my_rank: %d, my_sum: %d\n", i, num_ranks, my_global_rank, my_rank, my_sum);
-    //printf("i: %d; this_num_ranks: %d\n", i, myCommCollection->this_num_ranks);
-    myCommCollection=myCommCollection->next;
-  }
-  MPI_Barrier(MPI_COMM_WORLD);
+  //for (i=0;i<numRanges;i++){
+  //  MPI_Comm_size(myCommCollection->localcomm, &num_ranks);
+  //  MPI_Comm_rank(myCommCollection->localcomm, &my_rank);
+  //  MPI_Allreduce(&num_ranks, &my_sum, 1, MPI_INT, MPI_SUM, myCommCollection->localcomm);  
+  //  printf("i: %d; num_ranks: %d, my_global_rank: %d, my_rank: %d, my_sum: %d\n", i, num_ranks, my_global_rank, my_rank, my_sum);
+  //  //printf("i: %d; this_num_ranks: %d\n", i, myCommCollection->this_num_ranks);
+  //  myCommCollection=myCommCollection->next;
+  //}
+  
+  struct data_struct * sends
   
   printf("AFTER LOOP\n");
   MPI_Finalize();

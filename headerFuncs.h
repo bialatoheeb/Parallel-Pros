@@ -20,6 +20,11 @@ struct node{
   struct data_struct *center; //leafValue;
 };
 
+struct snode{
+  long double max[3], min[3];
+  struct node *left, *right;
+};
+
 struct Gnode{
   long double max[3], min[3], maxRadius;
   struct Gnode *left, *right, *parent;
@@ -34,6 +39,7 @@ struct commgroupcollection{
   MPI_Comm localcomm;
   struct commgroupcollection * prev;
   struct commgroupcollection * next;
+  
 
 };
 

@@ -1,0 +1,66 @@
+commtest.c:41:  long double xyz[3];
+functionsAllToAllv.c:58:  long double *sends=(long double*) send;
+functionsAllToAllv.c:99:  long double * send_array = (long double *) send;
+functionsAllToAllv.c:100:  long double * recv_array = (long double *) recv;
+functionsCreateType.c:31:  MPI_Type_create_resized(MPI_LONG_DOUBLE, 0, sizeof(long double), &ld_type);
+functionsData.c:22:  long double *p1 = (long double *) s1;
+functionsData.c:23:  long double  *p2 = (long double *) s2;
+functionsFiles.c:14:  long double x,y,z;
+functionsFiles.c:22:      fread(&x,sizeof(long double),1,fp); 
+functionsFiles.c:23:      fread(&y,sizeof(long double),1,fp); 
+functionsFiles.c:24:      fread(&z,sizeof(long double),1,fp); 
+functionsFiles.c:47:  long double x,y,z;
+functionsFiles.c:54:  size_t dataSize = sizeof(long long int) +  3*sizeof(long double);
+functionsFiles.c:90:      //fread(&temp.xyz[0],sizeof(long double),1,fp); 
+functionsFiles.c:91:      //fread(&temp.xyz[1],sizeof(long double),1,fp); 
+functionsFiles.c:92:      //fread(&temp.xyz[2],sizeof(long double),1,fp); 
+functionsFiles.c:94:      fread(&x,sizeof(long double),1,fp); 
+functionsFiles.c:95:      fread(&y,sizeof(long double),1,fp); 
+functionsFiles.c:96:      fread(&z,sizeof(long double),1,fp); 
+functionsFiles.c:146:	  fread(&temp.xyz[0],sizeof(long double),1,fp);
+functionsFiles.c:147:	  fread(&temp.xyz[1],sizeof(long double),1,fp);
+functionsFiles.c:148:	  fread(&temp.xyz[2],sizeof(long double),1,fp);
+functionsGlobalSeqTree.c:36:  long double radToMax=0, radToMin=0;
+functionsGlobalSeqTree.c:71:void getLargestDimensionGlobal(long double *arrayMax, long double *arrayMin, int *colIndex){
+functionsGlobalSeqTree.c:72:  long double range = arrayMax[0] - arrayMin[0];
+functionsGlobalSeqTree.c:85:void getMaxMinGlobal(void* varray, int size,  int colIndex, long double *arrayMax, long double *arrayMin){
+functionsGlobalSeqTree.c:87:  long double *allMax = (long double *) malloc(3 * num_ranks * sizeof(long double));
+functionsGlobalSeqTree.c:88:  long double *allMin = (long double *) malloc(3 * num_ranks * sizeof(long double));
+functionsSeqSearch.c:4:  long double targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
+functionsSeqTree.c:48:  long double radToMax=0, radToMin=0;
+functionsSeqTree.c:79:void getLargestDimension(long double *arrayMax, long double *arrayMin, int *colIndex){
+functionsSeqTree.c:80:  long double range = arrayMax[0] - arrayMin[0];
+functionsSeqTree.c:93:void getMaxMin(void* varray, int size,  int colIndex, long double *arrayMax, long double *arrayMin){
+functionsSort.c:7:  long double* nodeDivL = (long double *) malloc((num_ranks+2)*sizeof(long double));
+functionsSort.c:9:  long double* LDivinfo = (long double *) malloc(((num_ranks+2)*num_ranks)*sizeof(long double));
+functionsSort.c:10:  long double* LDiv = (long double *) malloc(((num_ranks)*num_ranks)*sizeof(long double));
+functionsSort.c:11:  long double* L = (long double *) malloc((num_ranks+1)*sizeof(long double));
+functionsSort.c:12:  long double totalMax; // = LDivinfo[num_ranks];
+functionsSort.c:83:  qsort(LDiv, (num_ranks)*num_ranks, sizeof(long double), compare_longdouble);
+functionsSort.c:119:// rangeLi long double [num_ranks] L[i+1] - L[i-1] index 0 is blank
+functionsSort.c:120:// totalRange long double L[num_ranks] - L[0]
+functionsSort.c:121:// smallest long double min[array[i+1] - array[i]] > 0
+functionsSort.c:123:// smallestDiffL long double [num_ranks] L at smallestDiff
+functionsSort.c:133:  long double* L = (long double *) vL;
+functionsSort.c:144:  long double rangeL[num_ranks];
+functionsSort.c:145:  long double myrange;
+functionsSort.c:146:  long double totalRange = L[num_ranks] - L[0];
+functionsSort.c:147:  long double smallest;
+functionsSort.c:148:  long double mysmallest;
+functionsSort.c:149:  long double * allSmallest = (long double *) malloc(num_ranks*sizeof(long double));
+functionsSort.c:152:  long double smallestDiffL[num_ranks];
+functionsSort.c:371:  long double* L = (long double *) vL;
+functionsSort.c:375:  long double totalMax; // = LDivinfo[num_ranks];
+functionsSort.c:517:  long double  *L = (long double *) vL;
+functionsTrees.c:6:  long double dist = 0.0;
+functionsTrees.c:54:  long double dist = 0.0;
+functionsTrees.c:99:  long double radToMax=0, radToMin=0;
+functionsTrees.c:154:  long double targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
+functionsTrees.c:237:  long double targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
+functionsTrees.c:253:  long double targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
+functionsTrees.c:302:  long double targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
+functionsTrees.c:336:  long double targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
+functionsTrees.c:402:  long double *allDummy = (long double *) malloc(3 * num_ranks * sizeof(long double));
+verify.c:3:void verify(long double min, long double max){
+verify.c:5:  long double min_max[2] = {min, max};
+verify.c:6:  long double * temp = (long double *) malloc(2 * num_ranks * sizeof(long double));
