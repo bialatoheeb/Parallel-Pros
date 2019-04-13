@@ -11,22 +11,30 @@ void readFromFile(char* fname, const int size, void* varray ){
   FILE *fp;
   int i = 0;
   long int id;
-  long double x,y,z;
+  long double xyz[3],x,y,z;
   char * line = NULL;
   size_t len=0;
   ssize_t read;
-  printf("%s\n",fname);
+  //printf("%s\n",fname);
   if ((fp = fopen(fname, "rb")) != NULL){
     while(!feof(fp) && i < size){
-      fread(&temp.num,sizeof(long int),1,fp);
-      fread(&temp.xyz[0],sizeof(long double),1,fp); 
-      fread(&temp.xyz[1],sizeof(long double),1,fp); 
-      fread(&temp.xyz[2],sizeof(long double),1,fp); 
+      //fread(&temp.num,sizeof(long int),1,fp);
+      //fread(&temp.xyz[0],sizeof(long double),1,fp); 
+      //fread(&temp.xyz[1],sizeof(long double),1,fp); 
+      //fread(&temp.xyz[2],sizeof(long double),1,fp); 
+      fread(&id,sizeof(long int),1,fp);
+      fread(&x,sizeof(long double),1,fp); 
+      fread(&y,sizeof(long double),1,fp); 
+      fread(&z,sizeof(long double),1,fp); 
 
-      array[i].num = temp.num;
-      array[i].xyz[0] = temp.xyz[0];
-      array[i].xyz[1] = temp.xyz[1];
-      array[i].xyz[2] = temp.xyz[2];
+      //array[i].num = temp.num;
+      //array[i].xyz[0] = temp.xyz[0];
+      //array[i].xyz[1] = temp.xyz[1];
+      //array[i].xyz[2] = temp.xyz[2];
+      array[i].num = id; //temp.num;
+      array[i].xyz[0] = x; //temp.xyz[0];
+      array[i].xyz[1] = y; //temp.xyz[1];
+      array[i].xyz[2] = z; //temp.xyz[2];
 
       i++;
     }
@@ -44,7 +52,7 @@ void readFromFileAllRead(int sizeOnAll, void* varray ){
   FILE *fp;
   int i = 0;
   long int id;
-  long double x,y,z;
+  long double xyz[3],x,y,z;
   char * line = NULL;
   size_t len=0;
   ssize_t read;
@@ -86,15 +94,23 @@ void readFromFileAllRead(int sizeOnAll, void* varray ){
   }
   while (num_of_reads < size){
     if (!feof(fp)){
-      fread(&temp.num,sizeof(long int),1,fp);
-      fread(&temp.xyz[0],sizeof(long double),1,fp); 
-      fread(&temp.xyz[1],sizeof(long double),1,fp); 
-      fread(&temp.xyz[2],sizeof(long double),1,fp); 
+      //fread(&temp.num,sizeof(long int),1,fp);
+      //fread(&temp.xyz[0],sizeof(long double),1,fp); 
+      //fread(&temp.xyz[1],sizeof(long double),1,fp); 
+      //fread(&temp.xyz[2],sizeof(long double),1,fp); 
+      fread(&id,sizeof(long int),1,fp);
+      fread(&x,sizeof(long double),1,fp); 
+      fread(&y,sizeof(long double),1,fp); 
+      fread(&z,sizeof(long double),1,fp); 
       
-      array[num_of_reads].num = temp.num;
-      array[num_of_reads].xyz[0] = temp.xyz[0];
-      array[num_of_reads].xyz[1] = temp.xyz[1];
-      array[num_of_reads].xyz[2] = temp.xyz[2];
+      //array[num_of_reads].num = temp.num;
+      //array[num_of_reads].xyz[0] = temp.xyz[0];
+      //array[num_of_reads].xyz[1] = temp.xyz[1];
+      //array[num_of_reads].xyz[2] = temp.xyz[2];
+      array[num_of_reads].num = id; //temp.num;
+      array[num_of_reads].xyz[0] = x; //temp.xyz[0];
+      array[num_of_reads].xyz[1] = y; //temp.xyz[1];
+      array[num_of_reads].xyz[2] = z; //temp.xyz[2];
 
       num_of_reads++;
     }else{

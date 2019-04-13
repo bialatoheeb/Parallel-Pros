@@ -18,6 +18,8 @@ void createCommCollections(int mymin, int mymax, struct commgroupcollection *acg
     }else{
       createCommCollections(mymid, mymax, acgrange->next);
     }
+  }else{
+    acgrange->next = NULL;
   }
   
 
@@ -53,6 +55,19 @@ void createCommLevel(struct commgroupcollection * cgc, int assigned){
   }
 }
 
+void deleteComms(){
+  int i = 1;
+  while (tempCollection->next != NULL && i<maxLevel) {
+    tempCollection = tempCollection->next;
+    MPI_Comm_free(&tempCollection->prev->localcomm);
+    MPI_Group_free(&tempCollection->prev->localgroup);
+    free(tempCollection->prev);
+    i++;
+  }
+  MPI_Comm_free(&tempCollection->localcomm);
+  MPI_Group_free(&tempCollection->localgroup);
+  free(tempCollection);
+}
 
 int main(int argc, char* argv[]) {
   if (argc < 2){
@@ -63,16 +78,18 @@ int main(int argc, char* argv[]) {
   if (argc > 2){
     targetSize = atoi(argv[2]);
   }
-  timePrint = 0;
+  timePrint = 1;
+  char timeName[80] = "/home/gst2d/Final/time.txt";
+  FILE *timeFile;
   int datapoints = atoi(argv[1]);
   int num;
   int i, j, k, l, colIndex = 0, mymid, timeIndex = 1, timeStops = 12 ;
-  int beginflag=0,readflag=1, lhflag=1, gtreeflag=1, readtflag=1, getsizeflag=1;
-  int ltreeflag=1,sendsizeflag=1,assigntargetflag=1, localcountflag=1,sumlocalcountflag=1;
-  int endflag=1;
+  int beginflag=0,readflag=0, lhflag=0, gtreeflag=0, readtflag=0, getsizeflag=0;
+  int ltreeflag=0,sendsizeflag=0,assigntargetflag=0, localcountflag=0,sumlocalcountflag=0;
+  int endflag=0;
   maxminflag=largestdimflag=globalsortflag=0;
   getbucketsflag=getcountsflag=inAdjustLflag=afterAdjustLflag=Bcastflag=0;
-  double startTime[timeStops], endTime[timeStops], avgTime[timeStops];
+  double startTime[timeStops], endTime[timeStops], avgTime[timeStops], dummyTime[timeStops];
   struct node headNode, *localHead, *buildLocalHead;
   struct Gnode Gtree, *currNode;
   MPI_Status mystat;
@@ -84,9 +101,12 @@ int main(int argc, char* argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   global_num_ranks = num_ranks;
   my_global_rank = my_rank;
+  
   if (timePrint == 1){
     //printf("%d,%d,%d",datapoints, 
+    
     startTime[0] = timestamp();
+    
   }
   j = MPI_Comm_dup(MPI_COMM_WORLD, &dup_comm_world); 
   MPI_Comm_group( dup_comm_world, &world_group );
@@ -136,10 +156,16 @@ int main(int argc, char* argv[]) {
     MPI_Barrier(MPI_LOCAL_COMM);
   }
 
-  
+  tempCollection = myCommCollection;
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
-    
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];    
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    if (my_global_rank == 0){
+      timeFile = fopen(timeName, "a");
+      fprintf(timeFile,"%f", avgTime[timeIndex-1]);      
+      //fclose(timeFile);
+    }
   }
 
   struct data_struct* array  = (struct data_struct *) malloc(num * sizeof(struct data_struct));
@@ -154,7 +180,13 @@ int main(int argc, char* argv[]) {
   readFromFileAllRead(datapoints, array );
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
-    
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    if (my_global_rank == 0){
+      //timefile = fopen(timeName, "a");
+      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      //fclose(timeFile);
+    }
   }
   if (readflag == 1)
     printf("READPOINTS gid%d\n", my_global_rank);
@@ -165,14 +197,25 @@ int main(int argc, char* argv[]) {
     startTime[timeIndex] = timestamp();    
   }
   localHead = buildTreeGlobal(array, num, &headNode, -1);
+  //deleteLocalHeadBuild(&headNode);
+  MPI_Barrier(MPI_COMM_WORLD);
+  deleteComms();
+  //
   array = localHead->center;
   num = localHead->num_below;
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
-    
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    if (my_global_rank == 0){
+      //timefile = fopen(timeName, "a");
+      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      //fclose(timeFile);
+    }
   }
   if (lhflag == 1)
     printf("GETLOCALHEAD gid%d\n", my_global_rank);
+  
   //=============================== 
   //BUILD GLOBAL TREE ON RANK ZERO
   //=============================== 
@@ -182,10 +225,15 @@ int main(int argc, char* argv[]) {
   globalTreeMaster(&Gtree, localHead);
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
-    
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    if (my_global_rank == 0){
+      printf(";%f", avgTime[timeIndex-1]);
+    }
   }
   if (gtreeflag == 1)
     printf("BUILDGLOBALTREE gid%d\n", my_global_rank);
+  
   
   //========================
   //
@@ -201,17 +249,26 @@ int main(int argc, char* argv[]) {
   int totalSendSize = 0;
   struct data_struct* sendArray;//  =
   struct data_struct* allSendArrays[global_num_ranks];
-  if (my_global_rank == 0){
-    if (timePrint == 1){
+  if (timePrint == 1){
       startTime[timeIndex] = timestamp();    
     }
-    readFromFile(fname, targetSize, targetArray );
-    if (timePrint == 1){
-    endTime[timeIndex++] = timestamp();
+  if (my_global_rank == 0){
     
-    }
+    readFromFile(fname, targetSize, targetArray );
+    
     if (readtflag == 1)
       printf("READTARGETS gid%d\n", my_global_rank);
+  }
+  if (timePrint == 1){
+    endTime[timeIndex++] = timestamp();
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
+    
+    if (my_global_rank == 0){
+      avgTime[timeIndex-1] = dummyTime[timeIndex-1];
+      //timefile = fopen(timeName, "a");
+      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      //fclose(timeFile);
+    }
   }
 
   //========================
@@ -228,23 +285,40 @@ int main(int argc, char* argv[]) {
   }  
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
     
+    if (my_global_rank == 0){
+      avgTime[timeIndex-1] = dummyTime[timeIndex-1];
+      //timefile = fopen(timeName, "a");
+      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      //fclose(timeFile);
+    }
   }
   if (getsizeflag == 1)
     printf("GETSIZE gid%d\n", my_global_rank);
+  
   //========================
   //   LOCAL TREE BUILD 
   //========================
   if (timePrint == 1){
     startTime[timeIndex] = timestamp();    
   }
+  //reduceLocalHead()
   buildTree(array, num, localHead, -1);
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
-    
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    if (my_global_rank == 0){
+      //timefile = fopen(timeName, "a");
+      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      //fclose(timeFile);
+    }
   }
   if (ltreeflag == 1)
     printf("LOCALTREEBUILD gid%d\n", my_global_rank);
+ 
+  
   //========================
   //   RANK 0 SENDS NUM OF TARGETS TO OTHER RANKS
   //========================
@@ -254,10 +328,17 @@ int main(int argc, char* argv[]) {
   MPI_Scatter(sendSize, 1, MPI_INT, &mySendSize, 1, MPI_INT, 0, MPI_COMM_WORLD);
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
-    
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    if (my_global_rank == 0){
+      //timefile = fopen(timeName, "a");
+      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      //fclose(timeFile);
+    }
   }
   if (sendsizeflag == 1)
     printf("SENDSIZE gid%d\n", my_global_rank);
+  MPI_Barrier(MPI_COMM_WORLD);
   //========================
   //   RANK 0 ASSIGNS TARGETS TO OTHER RANKS
   //========================
@@ -289,10 +370,17 @@ int main(int argc, char* argv[]) {
   }
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
-    
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    if (my_global_rank == 0){
+      //timefile = fopen(timeName, "a");
+      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      //fclose(timeFile);
+    }
   }
   if (assigntargetflag == 1)
     printf("ASSIGNTARGET gid%d\n", my_global_rank);
+  
   double radius[3] = {0.01, 0.05, 0.1};
   int localCount = 0, totalCount, tgi = 0, sendi = 0, radi = 0;
   long int *radiCounts = (long int *) malloc(4*mySendSize*sizeof(long int));
@@ -316,7 +404,13 @@ int main(int argc, char* argv[]) {
   }
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
-    
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    if (my_global_rank == 0){
+      //timefile = fopen(timeName, "a");
+      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      //fclose(timeFile);
+    }
   }
 
   if (localcountflag == 1)
@@ -383,16 +477,29 @@ int main(int argc, char* argv[]) {
   MPI_Barrier(MPI_COMM_WORLD);
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
-    
+    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    if (my_global_rank == 0){
+      //timefile = fopen(timeName, "a");
+      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      //fclose(timeFile);
+    }
   }
   if (sumlocalcountflag == 1)
     printf("SUMCOUNTS gid%d\n", my_global_rank);
   if (timePrint == 1){
     endTime[0] = timestamp();
+    dummyTime[0] = endTime[0] - startTime[0];
+    MPI_Reduce( &dummyTime[0], &avgTime[0], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    if (my_global_rank == 0){
+      //timeFile = fopen(timeName, "a");
+      fprintf(timeFile,";%f\n", avgTime[0]);
+      fclose(timeFile);
+    }
     
   }
   
-  if (my_global_rank == 0){
+  if (my_global_rank == -1){
     
     
     ////================
