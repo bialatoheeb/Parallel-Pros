@@ -1,0 +1,32 @@
+DataPoints;Nodes;createComms;readPoints;getLocalHead;buildGlobalTree;readTargets;getSendSize;buildLocalTree;sendSendSize;assignTargets;localCount;globalCount;totalTime
+500;8;;0.000000
+targetSize 20	mySendSize 12
+radiCountsSize 48	mySendSize 12
+
+
+
+radiCounts 10000000004	0	0	2	
+radiCounts 10000000007	0	0	0	
+radiCounts 10000000008	0	0	0	
+radiCounts 10000000013	0	0	0	
+radiCounts 10000000014	0	0	0	
+radiCounts 10000000015	0	10	15	
+radiCounts 10000000016	0	0	0	
+radiCounts 10000000019	0	0	0	
+radiCounts 0	0	0	0	
+radiCounts 0	0	0	0	
+radiCounts 0	0	0	0	
+radiCounts 0	0	0	0	
+HELLO GUYS BEFORE
+[compute-0-18:68264] *** Process received signal ***
+[compute-0-18:68264] Signal: Segmentation fault (11)
+[compute-0-18:68264] Signal code: Address not mapped (1)
+[compute-0-18:68264] Failing at address: 0x1fde47e8
+[compute-0-18:68264] [ 0] /lib64/libpthread.so.0(+0xf5e0)[0x2adaab9615e0]
+[compute-0-18:68264] [ 1] /home/tab7v/COMS7900/tttt/prof_main[0x40390a]
+[compute-0-18:68264] [ 2] /lib64/libc.so.6(__libc_start_main+0xf5)[0x2adaabb8fc05]
+[compute-0-18:68264] [ 3] /home/tab7v/COMS7900/tttt/prof_main[0x401689]
+[compute-0-18:68264] *** End of error message ***
+--------------------------------------------------------------------------
+mpirun noticed that process rank 0 with PID 0 on node compute-0-18 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
