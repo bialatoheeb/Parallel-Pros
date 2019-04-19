@@ -95,10 +95,10 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //
   //============================
   if (getbucketsflag == 1)
-    printf("GETBUCKETS gid%d\n", my_global_rank);
+    printf("GETBUCKETS gid%03d\n", my_global_rank);
   getCounts(num, colIndex, array, L, totalCount, allCounts);
   if (getcountsflag == 1)
-    printf("GETCOUNTS gid%d\n", my_global_rank);
+    printf("GETCOUNTS gid%03d\n", my_global_rank);
   checkBalance(&balanced, totalCount);
 
   //============================
@@ -138,7 +138,7 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
     return;
   }
   if (inAdjustLflag == 1)
-    printf("INADJUSTL gid%d\n", my_global_rank);
+    printf("INADJUSTL gid%03d\n", my_global_rank);
   int sDiff[num_ranks];
   int prevsDiff[num_ranks];
   float rangeL[num_ranks];
@@ -300,7 +300,7 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
       keepGoing = myflags[1];
       i = myflags[2];
       //if (my_global_rank <= 1){
-      //	printf("balanced: %d; keepGoing: %d; i: %d; gid%d\n", *balanced, keepGoing, i, my_global_rank);
+      //	printf("balanced: %d; keepGoing: %d; i: %d; gid%03d\n", *balanced, keepGoing, i, my_global_rank);
       //}
       if (*balanced == 0 &&  keepGoing == 0){
 	//my_Bcast_ld(L, num_ranks, 0);
@@ -354,16 +354,16 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
     }
   }
   if (afterAdjustLflag == 1)
-    printf("AFTERADJUSTL gid%d\n", my_global_rank);
+    printf("AFTERADJUSTL gid%03d\n", my_global_rank);
   MPI_Bcast(&smallestDiffBool, 1, MPI_INT, 0, myCommCollection->localcomm);
   //my_Bcast_int(&smallestDiffBool, 1, 0);
   if (smallestDiffBool == 0){
     MPI_Bcast(L, num_ranks, ld_type, 0, myCommCollection->localcomm);
-    // my_Bcast_ld(L, num_ranks, 0);
+    //my_Bcast_ld(L, num_ranks, 0);
     getCounts(num, colIndex, array, L, totalCount, allCounts);
   }
   if (Bcastflag == 1)
-    printf("BCAST gid%d\n", my_global_rank);
+    printf("BCAST gid%03d\n", my_global_rank);
 }
 
 void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtotalCount, void *vallCounts){

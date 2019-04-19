@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
   MPI_Status mystat;
   
   if (beginflag == 1)
-    printf("Begin gid%d\n", my_global_rank);
+    printf("Begin gid%03d\n", my_global_rank);
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
     
   }
   if (readflag == 1)
-    printf("READPOINTS gid%d\n", my_global_rank);
+    printf("READPOINTS gid%03d\n", my_global_rank);
   //=============================== 
   // GET LOCAL HEAD
   //=============================== 
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
     
   }
   if (lhflag == 1)
-    printf("GETLOCALHEAD gid%d\n", my_global_rank);
+    printf("GETLOCALHEAD gid%03d\n", my_global_rank);
 
   MPI_Finalize();
   return 0;

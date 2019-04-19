@@ -59,13 +59,13 @@ void deleteComms(){
   int i = 1;
   while (tempCollection->next != NULL && i<maxLevel) {
     tempCollection = tempCollection->next;
-    MPI_Comm_free(&tempCollection->prev->localcomm);
-    MPI_Group_free(&tempCollection->prev->localgroup);
+    //MPI_Comm_free(&tempCollection->prev->localcomm);
+    //MPI_Group_free(&tempCollection->prev->localgroup);
     free(tempCollection->prev);
     i++;
   }
-  MPI_Comm_free(&tempCollection->localcomm);
-  MPI_Group_free(&tempCollection->localgroup);
+  //MPI_Comm_free(&tempCollection->localcomm);
+  //MPI_Group_free(&tempCollection->localgroup);
   free(tempCollection);
 }
 
@@ -127,7 +127,8 @@ int main(int argc, char* argv[]) {
   int beginflag=1,readflag=1, lhflag=1, gtreeflag=1, readtflag=1, getsizeflag=1;
   int ltreeflag=1,sendsizeflag=1,assigntargetflag=1, localcountflag=1,sumlocalcountflag=1;
   int endflag=1;
-  maxminflag=largestdimflag=globalsortflag=0;
+  maxminflag=largestdimflag=globalsortflag=1;
+  getallcountflag=alltoallflag=1;
   getbucketsflag=getcountsflag=inAdjustLflag=afterAdjustLflag=Bcastflag=0;
   float startTime[timeStops], endTime[timeStops], avgTime[timeStops], dummyTime[timeStops];
   struct node headNode, *localHead, *buildLocalHead, *tnode;
@@ -135,7 +136,7 @@ int main(int argc, char* argv[]) {
   MPI_Status mystat;
   
   if (beginflag == 1)
-    printf("Begin gid%d\n", my_global_rank);
+    printf("Begin gid%03d\n", my_global_rank);
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -194,15 +195,15 @@ int main(int argc, char* argv[]) {
   
   MPI_Allreduce(&numRanges, &maxLevel, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
 
-  for (i=1;i<maxLevel;i++){
-    if (i > numRanges){
-      createCommLevel(tempCollection, 0);
-    }else{
-      createCommLevel(tempCollection, 1);      
-      tempCollection = tempCollection->next;
-    }
-    MPI_Barrier(MPI_LOCAL_COMM);
-  }
+  //for (i=1;i<maxLevel;i++){
+  //  if (i > numRanges){
+  //    createCommLevel(tempCollection, 0);
+  //  }else{
+  //    createCommLevel(tempCollection, 1);      
+  //    tempCollection = tempCollection->next;
+  //  }
+  //  MPI_Barrier(MPI_LOCAL_COMM);
+  //}
 
   tempCollection = myCommCollection;
   if (timePrint == 1){
@@ -239,7 +240,7 @@ int main(int argc, char* argv[]) {
     }
   }
   if (readflag == 1)
-    printf("READPOINTS gid%d\n", my_global_rank);
+    printf("READPOINTS gid%03d\n", my_global_rank);
   
   //=============================== 
   // GET LOCAL HEAD
@@ -250,6 +251,8 @@ int main(int argc, char* argv[]) {
   localHead = buildTreeGlobal(array, num, &headNode, -1);
   //deleteLocalHeadBuild(&headNode);
   MPI_Barrier(MPI_COMM_WORLD);
+  //MPI_Comm_free(&tempCollection->localcomm);
+  //MPI_Group_free(&tempCollection->localgroup);
   deleteComms();
 
 
@@ -266,7 +269,7 @@ int main(int argc, char* argv[]) {
     }
   }
   if (lhflag == 1)
-    printf("GETLOCALHEAD gid%d\n", my_global_rank);
+    printf("GETLOCALHEAD gid%03d\n", my_global_rank);
   //printf("myrank: %d; num: %d\n", my_global_rank, num);
   MPI_Allreduce(&num,&k,1,MPI_INT,MPI_MIN,MPI_COMM_WORLD);
   if ( k < 4){
@@ -291,7 +294,7 @@ int main(int argc, char* argv[]) {
     }
   }
   if (gtreeflag == 1)
-    printf("BUILDGLOBALTREE gid%d\n", my_global_rank);
+    printf("BUILDGLOBALTREE gid%03d\n", my_global_rank);
   
   //========================
   //
@@ -316,7 +319,7 @@ int main(int argc, char* argv[]) {
     readFromFile(fname, targetSize, targetArray );
     
     if (readtflag == 1)
-      printf("READTARGETS gid%d\n", my_global_rank);
+      printf("READTARGETS gid%03d\n", my_global_rank);
   }
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
@@ -359,7 +362,7 @@ int main(int argc, char* argv[]) {
     }
   }
   if (getsizeflag == 1)
-    printf("GETSIZE gid%d\n", my_global_rank);
+    printf("GETSIZE gid%03d\n", my_global_rank);
   
   //========================
   //   LOCAL TREE BUILD 
@@ -380,7 +383,7 @@ int main(int argc, char* argv[]) {
     }
   }
   if (ltreeflag == 1)
-    printf("LOCALTREEBUILD gid%d\n", my_global_rank);
+    printf("LOCALTREEBUILD gid%03d\n", my_global_rank);
   
   
   
@@ -405,7 +408,7 @@ int main(int argc, char* argv[]) {
 
 
   if (sendsizeflag == 1)
-    printf("SENDSIZE gid%d\n", my_global_rank);
+    printf("SENDSIZE gid%03d\n", my_global_rank);
   MPI_Barrier(MPI_COMM_WORLD);
 
   //========================
@@ -462,7 +465,7 @@ int main(int argc, char* argv[]) {
   }
   
   if (assigntargetflag == 1)
-    printf("ASSIGNTARGET gid%d\n", my_global_rank);
+    printf("ASSIGNTARGET gid%03d\n", my_global_rank);
 
   MPI_Barrier(MPI_COMM_WORLD);
   float radius[3] = {0.01, 0.05, 0.1};
@@ -529,7 +532,7 @@ int main(int argc, char* argv[]) {
   }
   
   if (localcountflag == 1)
-    printf("LOCALCOUNTBegin gid%d\n", my_global_rank);
+    printf("LOCALCOUNTBegin gid%03d\n", my_global_rank);
   
   
   if (timePrint == 1){
@@ -610,7 +613,7 @@ int main(int argc, char* argv[]) {
     }
   }
   if (sumlocalcountflag == 1)
-    printf("SUMCOUNTS gid%d\n", my_global_rank);
+    printf("SUMCOUNTS gid%03d\n", my_global_rank);
   if (timePrint == 1){
     endTime[0] = timestamp();
     dummyTime[0] = endTime[0] - startTime[0];

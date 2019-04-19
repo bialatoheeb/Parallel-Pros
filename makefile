@@ -22,4 +22,4 @@ prof_main: $(functions)
 	mpicc -c -o $@ $< -I.
 
 clean:
-	rm *~ main *.o
+	rm *~ prof_main *.o

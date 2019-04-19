@@ -54,6 +54,7 @@ int num_ranks, global_num_ranks, numRanges, maxLevel;
 int my_rank, my_global_rank;
 int timePrint;
 int maxminflag,largestdimflag,globalsortflag;
+int getallcountflag, alltoallflag;
 int getbucketsflag,getcountsflag,inAdjustLflag,afterAdjustLflag,Bcastflag;
 
 void my_Bcast_int(void *, int, int);

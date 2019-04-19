@@ -11,16 +11,17 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
     getMaxMinGlobal(array, num, colIndex, anode->max, anode->min); //arrayMin);
     anode->num_below= -1;
     if (maxminflag == 1)
-      printf("GETMAXMIN gid%d\n", my_global_rank);
+      printf("GETMAXMIN gid%03d\n", my_global_rank);
     getLargestDimensionGlobal(anode->max, anode->min, &colIndex);
     if (largestdimflag == 1)
-      printf("LARGESTDIM gid%d\n", my_global_rank);
+      printf("LARGESTDIM gid%03d\n", my_global_rank);
     array = globalSort(array, &num, colIndex, &globalNum);
     if (globalsortflag == 1)
-      printf("GLOBALSORT gid%d\n", my_global_rank);
+      printf("GLOBALSORT gid%03d\n", my_global_rank);
     return splitRanks(array, num, anode, colIndex);
     
   }else{
+    MPI_Comm_free(&myCommCollection->localcomm);
     getMaxMin(array, num, -1, anode->max, anode->min); //arrayMin);
     anode->num_below = num;
     anode->center = array;
@@ -151,11 +152,6 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, float *arrayMax, flo
       
     }
   }
-
-  
-  
-
-
 }
 
 
@@ -163,7 +159,7 @@ struct node * splitRanks(void *varray, int num, void *vnode, int colIndex){
   struct data_struct* array  = (struct data_struct *)varray;
   struct node *anode = (struct node *)vnode;
   char fname[71] = "/home/gst2d/COMS7900/aout.txt";
-  int i = 0, j, *size;
+  int i = 0, j, *size, cflag;
   if (num_ranks > 1){
     anode->left = (struct node *)malloc(sizeof(struct node));
     anode->right = (struct node *)malloc(sizeof(struct node));
@@ -175,31 +171,42 @@ struct node * splitRanks(void *varray, int num, void *vnode, int colIndex){
 	anode->right->min[i] = anode->min[i];
       }           
     }
+    MPI_Barrier(myCommCollection->localcomm);
+    if (my_rank < num_ranks/2){
+      cflag = 0;
+    }else{
+      cflag = 1;
+    }
+    MPI_Comm_split( myCommCollection->localcomm, cflag, my_rank, &myCommCollection->next->localcomm );
+    
+    MPI_Comm_free(&myCommCollection->localcomm);
     
     
     
     if (my_rank < num_ranks/2){      
       if (myCommCollection->this_num_ranks > 1){
-	myCommCollection = myCommCollection->next;
+	myCommCollection = myCommCollection->next;	
 	num_ranks = myCommCollection->this_num_ranks;
 	for (i=0;i<myCommCollection->this_num_ranks; i++){
 	  if (my_global_rank == myCommCollection->ranks[i])
 	    my_rank = i;
 	}
       }else{
+	myCommCollection = myCommCollection->next;	
 	num_ranks = 1;
 	my_rank = 0;
       }
       return buildTreeGlobal(array, num, anode->left, colIndex);
-    }else{      
+    }else{
       if (myCommCollection->this_num_ranks > 1){
-	myCommCollection = myCommCollection->next;
+	myCommCollection = myCommCollection->next;	
 	num_ranks = myCommCollection->this_num_ranks;
 	for (i=0;i<myCommCollection->this_num_ranks; i++){
 	  if (my_global_rank == myCommCollection->ranks[i])
 	    my_rank = i;
 	}
       }else{
+	myCommCollection = myCommCollection->next;	
 	num_ranks = 1;
 	my_rank = 0;
       }
