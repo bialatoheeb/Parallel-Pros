@@ -76,10 +76,11 @@ void searchTest(struct data_struct *,struct data_struct*, int);
 void compareTargets(struct data_struct *, struct data_struct *, int, int);
 void compareTargetsLocalTree(struct node *, struct data_struct *, int);
 void globalTreeMaster(struct Gnode *, struct node *);
+void getSendArray1Target(struct Gnode *, float, struct data_struct , int *, int);
 
 struct data_struct* globalSort(void *, int *, int, int *);
 
-int localSearch(struct node *, float, struct data_struct );
+int localSearch(struct node *, float, struct data_struct,struct node ** );
 
 void getMaxMin(void*, int, int, float*, float*);
 void getLargestDimension(float *, float *, int *);

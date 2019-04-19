@@ -1,5 +1,5 @@
 !#/bin/bash
 #$ -N main
-#$ -pe mpi 8
+#$ -pe mpi 64
 #$ -q intel.q
-mpirun -np $NSLOTS $HOME/COMS7900/tttt/prof_main 500 20 2>> $HOME/COMS7900/tttt/error.txt 1>> $HOME/COMS7900/tttt/time.txt  
+mpirun -np $NSLOTS $HOME/Final/prof_main 100000 10000 2>> $HOME/Final/error.txt 1>> $HOME/Final/time.txt  

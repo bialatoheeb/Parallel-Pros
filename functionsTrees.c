@@ -37,7 +37,7 @@ void compareTargetsLocalTree(struct node *localTree, struct data_struct *tarray,
   int i,j,k, r1=0, r2=0, r3=0, tr, count;
   for (k=0;k<numOfTargets;k++){
     count = 0;
-    count = localSearch(localTree, 0.000001, tarray[k]);
+    //count = localSearch(localTree, 0.000001, tarray[k]);
     if (count > 0){
 	r3 += 1;	
     }
@@ -121,10 +121,10 @@ void getGNode(void *vnode){
 void printGNode(void *vnode){
   struct Gnode *anode = (struct Gnode *)vnode;
   char fname[20];
-  sprintf(fname,"/home/tab7v/COMS7900/nodesG%03u.txt", my_global_rank);
+  sprintf(fname,"/home/gst2d/Final/nodesG%03u.txt", my_global_rank);
   FILE *myfile = fopen(fname, "a");
-  fprintf(myfile,"GnodeLRank: %03u;\nMax: (%15Lf,%15Lf,%15Lf);\nMin: (%15Lf,%15Lf,%15Lf);\nCenter: (%15Lf,%15Lf,%15Lf);\nmaxRadius: %15Lf;\nnum_below: %15u\n========\n",
-	  my_global_rank,
+  fprintf(myfile,"GnodeLRank: %03u;\nMax: (%15f,%15f,%15f);\nMin: (%15f,%15f,%15f);\nCenter: (%15f,%15f,%15f);\nmaxRadius: %15f;\nnum_below: %15u\n========\n",
+	  anode->this_rank,
 	  anode->max[0],anode->max[1],anode->max[2],
 	  anode->min[0],anode->min[1],anode->min[2],
 	  anode->center->xyz[0],anode->center->xyz[1],anode->center->xyz[2],
@@ -135,9 +135,9 @@ void printGNode(void *vnode){
 void printGTree(void *vnode){
   struct Gnode *anode = (struct Gnode *)vnode;
   char fname[20];
-  sprintf(fname,"/home/tab7v/COMS7900/gtree.txt", my_global_rank);
+  sprintf(fname,"/home/gst2d/COMS7900/gtree.txt", my_global_rank);
   FILE *myfile = fopen(fname, "a");
-  fprintf(myfile,"LRank: %03u;\nMax: (%15Lf,%15Lf,%15Lf);\nMin: (%15Lf,%15Lf,%15Lf);\nCenter: (%15Lf,%15Lf,%15Lf);\nmaxRadius: %15Lf;\nnum_below: %15u\n========\n",
+  fprintf(myfile,"LRank: %03u;\nMax: (%15f,%15f,%15f);\nMin: (%15f,%15f,%15f);\nCenter: (%15f,%15f,%15f);\nmaxRadius: %15f;\nnum_below: %15u\n========\n",
 	  my_global_rank,
 	  anode->max[0],anode->max[1],anode->max[2],
 	  anode->min[0],anode->min[1],anode->min[2],
@@ -248,52 +248,150 @@ void getSendSize1(struct Gnode * headnode, float radius, struct data_struct *tar
   }
 }
 
+//void getSendSize1Target(struct Gnode * anode, float radius, struct data_struct target, int *sendSize){
+//  int i,j,k, count = 0;
+//  float targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
+//  if (anode->num_below > 1){
+//    for (i=0;i<3;i++){
+//      targetDir[i] = (target.xyz[i]-anode->center->xyz[i]);
+//      targetMagnitude += targetDir[i]*targetDir[i];
+//    }
+//  
+//    targetMagnitude = sqrt(targetMagnitude);
+//    for (i=0;i<3;i++){
+//      targetDir[i] = targetDir[i]/targetMagnitude;
+//      targetDir[i] *= anode->maxRadius;
+//      targetPoint[i] = anode->center->xyz[i] + targetDir[i];
+//      testRadius += pow(target.xyz[i] - targetPoint[i],2);
+//    
+//    
+//    }
+//    testRadius = sqrt(testRadius);
+//    if (targetMagnitude < anode->maxRadius || testRadius < radius){ //THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
+//      getSendSize1Target(anode->left, radius, target, sendSize);
+//      getSendSize1Target(anode->right, radius, target, sendSize);
+//      return;
+//    }
+//    
+//  }else{
+//    for (i=0;i<3;i++){
+//      targetDir[i] = (target.xyz[i]-anode->center->xyz[i]);
+//      targetMagnitude += targetDir[i]*targetDir[i];
+//    }
+//  
+//    targetMagnitude = sqrt(targetMagnitude);
+//    for (i=0;i<3;i++){
+//      targetDir[i] = targetDir[i]/targetMagnitude;
+//      targetDir[i] *= anode->maxRadius;
+//      targetPoint[i] = anode->center->xyz[i] + targetDir[i];
+//      testRadius += pow(target.xyz[i] - targetPoint[i],2);
+//    
+//    
+//    }
+//    testRadius = sqrt(testRadius);
+//    
+//    if (targetMagnitude < anode->maxRadius || testRadius < radius){ //THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
+//      sendSize[anode->this_rank]+= 1;
+//    }
+//  }
+//}
+
 void getSendSize1Target(struct Gnode * anode, float radius, struct data_struct target, int *sendSize){
-  int i,j,k, count = 0;
+  int i,j,k,  caSize = 0;
   float targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
-  if (anode->num_below > 1){
-    for (i=0;i<3;i++){
-      targetDir[i] = (target.xyz[i]-anode->center->xyz[i]);
-      targetMagnitude += targetDir[i]*targetDir[i];
-    }
-  
-    targetMagnitude = sqrt(targetMagnitude);
-    for (i=0;i<3;i++){
-      targetDir[i] = targetDir[i]/targetMagnitude;
-      targetDir[i] *= anode->maxRadius;
-      targetPoint[i] = anode->center->xyz[i] + targetDir[i];
-      testRadius += pow(target.xyz[i] - targetPoint[i],2);
-    
-    
-    }
-    testRadius = sqrt(testRadius);
-    if (targetMagnitude < anode->maxRadius || testRadius < radius){ //THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
-      getSendSize1Target(anode->left, radius, target, sendSize);
-      getSendSize1Target(anode->right, radius, target, sendSize);
-      return;
-    }
-    
-  }else{
-    for (i=0;i<3;i++){
-      targetDir[i] = (target.xyz[i]-anode->center->xyz[i]);
-      targetMagnitude += targetDir[i]*targetDir[i];
-    }
-  
-    targetMagnitude = sqrt(targetMagnitude);
-    for (i=0;i<3;i++){
-      targetDir[i] = targetDir[i]/targetMagnitude;
-      targetDir[i] *= anode->maxRadius;
-      targetPoint[i] = anode->center->xyz[i] + targetDir[i];
-      testRadius += pow(target.xyz[i] - targetPoint[i],2);
-    
-    
-    }
-    testRadius = sqrt(testRadius);
-    
-    if (targetMagnitude < anode->maxRadius || testRadius < radius){ //THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
-      sendSize[anode->this_rank]+= 1;
-    }
+  struct Gnode ** childArray = (struct Gnode **)malloc(global_num_ranks*sizeof(struct Gnode *));
+  char fname[80];
+  FILE *myfile;
+  //struct Gnode * childArray[global_num_ranks];
+  //sprintf(fname,"/home/gst2d/Final/TargetidsizeG%03u.txt", anode->this_rank);
+  //if (target.num == 10000000039){
+  //  //sprintf(fname, "/home/gst2d/Final/Trace.txt");
+  //  sprintf(fname,"/home/gst2d/Final/nodesG%03u.txt", my_global_rank);
+  //  
+  //fprintf(myfile,"%Ld\n",target.num);
+  //}
+  for (i=0;i<3;i++){
+    targetDir[i] = (target.xyz[i]-anode->center->xyz[i]);
+    targetMagnitude += targetDir[i]*targetDir[i];
   }
+  
+  targetMagnitude = sqrt(targetMagnitude);
+  for (i=0;i<3;i++){
+    targetDir[i] = targetDir[i]/targetMagnitude;
+    targetDir[i] *= anode->maxRadius;
+    targetPoint[i] = anode->center->xyz[i] + targetDir[i];
+    testRadius += pow(target.xyz[i] - targetPoint[i],2);
+  }
+  testRadius = sqrt(testRadius);
+  if (targetMagnitude < anode->maxRadius || testRadius < radius){ //THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
+    caSize += 2;
+    childArray[0] = anode->left; //, radius, target, sendSize);
+    childArray[1] = anode->right;    
+  }
+  
+  //if (target.num == 10000000039)
+    //fprintf(myfile,"caSize: %d, targetMagnitude: %f, maxRadius: %f, testRedius: %f, radius: %f\n", caSize, targetMagnitude,anode->maxRadius, testRadius,radius);
+  //if (target.num == 10000000039){
+  //  myfile = fopen(fname, "a");
+  //  fprintf(myfile,"caSize: %d\n",caSize);
+  //  fclose(myfile);
+  //  printGNode(anode);
+  //}
+  while (caSize > 0){
+    anode = childArray[0];
+    targetMagnitude = testRadius = 0;
+    for (i=0;i<3;i++){
+      targetDir[i] = (target.xyz[i]-anode->center->xyz[i]);
+      targetMagnitude += targetDir[i]*targetDir[i];
+    }
+    
+    targetMagnitude = sqrt(targetMagnitude);
+    for (i=0;i<3;i++){
+      targetDir[i] = targetDir[i]/targetMagnitude;
+      targetDir[i] *= anode->maxRadius;
+      targetPoint[i] = anode->center->xyz[i] + targetDir[i];
+      testRadius += pow(target.xyz[i] - targetPoint[i],2);
+    }
+    testRadius = sqrt(testRadius);
+    //if (target.num == 10000000039){
+    //  myfile = fopen(fname, "a");
+    //  fprintf(myfile,"caSize: %d\n",caSize);
+    //  fprintf(myfile,"%f\t%f\t%f\n",target.xyz[0],target.xyz[1],target.xyz[2]);
+    //  fprintf(myfile,"caSize: %d, targetMagnitude: %f, maxRadius: %f, testRedius: %f, radius: %f\n", caSize, targetMagnitude,anode->maxRadius, testRadius,radius);
+    //  
+    //  fclose(myfile);
+    //  printGNode(anode);
+    //}
+    if (targetMagnitude < anode->maxRadius || testRadius < radius){ //THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
+      if (anode->num_below > 1){
+	for (i=0;i<caSize;i++)
+	  childArray[i] = childArray[i+1];
+	caSize += 1;
+	childArray[caSize-2] = anode->left; //, radius, target, sendSize);
+	childArray[caSize-1] = anode->right;    
+      }else{
+	for (i=0;i<caSize;i++)
+	  childArray[i] = childArray[i+1];
+	caSize -= 1;
+	sendSize[anode->this_rank]+= 1;
+	//sprintf(fname,"/home/gst2d/Final/TargetidsizeG%03u.txt", anode->this_rank);
+	//myfile = fopen(fname,"a");
+	//fprintf(myfile,"%Ld\n",target.num);
+	//fclose(myfile);
+	
+      }
+    }else{
+      for (i=0;i<caSize;i++)
+	  childArray[i] = childArray[i+1];
+      caSize -= 1;
+    }
+    //if (target.num == 10000000039)
+    //  fprintf(myfile,"caSize: %d, targetMagnitude: %f, maxRadius: %f, testRedius: %f, radius: %f\n", caSize, targetMagnitude,anode->maxRadius, testRadius,radius);
+    
+  }
+  //if (target.num == 10000000039)
+  //  fclose(myfile);
+  free(childArray);
 }
 
 int sendSizeTest(struct node * anode, float radius, struct data_struct * targets, int numOfTargets){
@@ -318,8 +416,12 @@ int sendSizeTest(struct node * anode, float radius, struct data_struct * targets
       
     
     }
+    //if (target.num == 1 && my_global_rank == 0)
+    //printf("myrank: %d, targetMagnitude: %f, maxRadius: %f, testRedius: %f, radius: %f\n", my_global_rank, targetMagnitude,anode->maxRadius, testRadius,radius);
     testRadius = sqrt(testRadius);
     if (targetMagnitude < anode->maxRadius || testRadius < radius){ //THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
+      //if (target.num == 1)
+      //printf("myrank: %d, targetMagnitude: %f, maxRadius: %f, testRedius: %f, radius: %f\n", my_global_rank, targetMagnitude,anode->maxRadius, testRadius,radius);
       
       count += 1;//localSearch(anode->left, radius, target);
     }
@@ -329,53 +431,191 @@ int sendSizeTest(struct node * anode, float radius, struct data_struct * targets
 
 
 
-void getSendArray(struct Gnode * headnode, float radius, struct data_struct *targets, int numOfTargets, struct data_struct *sendArray, int sendSize, int sendRank){
-  struct Gnode *anode;
-  struct data_struct *target;
-  int i,j,k, cnum, cmax, cmin, targeti, sendi = 0, curr_rank = 0;
-  float targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
-  //SEND SIZE WAS MADE WITH CALLOC
+//void getSendArray(struct Gnode * headnode, float radius, struct data_struct *targets, int numOfTargets, struct data_struct *sendArray, int sendSize, int sendRank){
+//  struct Gnode *anode;
+//  struct data_struct *target;
+//  int i,j,k, cnum, cmax, cmin, targeti, sendi = 0, curr_rank = 0;
+//  float targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
+//  
+//  //SEND SIZE WAS MADE WITH CALLOC
+//  radius = 0.1;
+//  anode = headnode;
+//  cmax = global_num_ranks;
+//  cmin = 0;
+//  cnum = (int)(cmax/2);
+//  while (anode->num_below > 1){
+//    if (sendRank >= cnum){
+//      anode = anode->right;
+//      cmin = cnum;
+//      cnum = (int)((cmax+cmin)/2);
+//      
+//    }else{
+//      anode= anode->left;
+//      cmax = cnum;
+//      cnum = (int)((cmax+cmin)/2);
+//    }
+//  }
+//  char fname[80];
+//  //sprintf(fname,"/home/gst2d/Final/TargetidarrayG%03u.txt", sendRank);
+//  sprintf(fname,"/home/gst2d/Final/nodesG%03u.txt", my_global_rank);
+//  FILE *myfile;// = fopen(fname, "w");
+//  //printGNode(anode);
+//  
+//  for (targeti=0; targeti < numOfTargets; targeti++){
+//    targetMagnitude = testRadius = 0;
+//    
+//    target = &targets[targeti];
+//    for (i=0;i<3;i++){
+//      targetDir[i] = (target->xyz[i]-anode->center->xyz[i]);
+//      targetMagnitude += targetDir[i]*targetDir[i];
+//    }
+//    targetMagnitude = sqrt(targetMagnitude);
+//    for (i=0;i<3;i++){
+//      targetDir[i] = targetDir[i]/targetMagnitude;
+//      targetDir[i] *= anode->maxRadius;
+//      targetPoint[i] = anode->center->xyz[i] + targetDir[i];
+//      testRadius += pow(target->xyz[i] - targetPoint[i],2);
+//      
+//    
+//    }
+//    testRadius = sqrt(testRadius);
+//    //if (target->num == 1 && my_global_rank == 0)
+//      //printf("ASSIGNmyrank: %d, targetMagnitude: %f, maxRadius: %f, testRedius: %f, radius: %f\n", my_global_rank, targetMagnitude,anode->maxRadius, testRadius,radius);
+//    if (target->num == 10000000039 && sendRank == 30){
+//      myfile = fopen(fname, "a");
+//      fprintf(myfile,"%f\t%f\t%f\n",target->xyz[0],target->xyz[1],target->xyz[2]);
+//      fprintf(myfile,"targetMagnitude: %f, maxRadius: %f, testRedius: %f, radius: %f\n", targetMagnitude,anode->maxRadius, testRadius,radius);
+//    
+//      fclose(myfile);
+//      printGNode(anode);
+//    }
+//    if (targetMagnitude < anode->maxRadius || testRadius < radius){//THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
+//      sendArray[sendi++] = *target;
+//      //fprintf(myfile,"%Ld\n",target->num);
+//    }
+//  }
+//  printf("rank: %d; sendSize: %d; sendi; %d\n", sendRank, sendSize, sendi);
+//}
 
-  anode = headnode;
-  cmax = global_num_ranks;
-  cmin = 0;
-  cnum = (int)(cmax/2);
-  while (anode->num_below > 1){
-    if (sendRank >= cnum){
-      anode = anode->right;
-      cmin = cnum;
-      cnum = (int)((cmax+cmin)/2);
-      
-    }else{
-      anode= anode->left;
-      cmax = cnum;
-      cnum = (int)((cmax+cmin)/2);
-    }
-  }
+//void getSendSize1Target(struct Gnode * anode, float radius, struct data_struct target, int *sendSize){
+void  getSendArray(struct Gnode * headnode, float radius, struct data_struct *targets, int numOfTargets, struct data_struct *sendArray, int sendSize, int sendRank){
+  struct data_struct *target;
+  int i,j,k, targeti, curr_rank = 0;
+  float targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
+  //int * aSize = (int *)calloc(global_num_ranks,sizeof(int));
+  int aSize = 0, tsize = 0, sendi=0;
+  radius = 0.1;
+  //SEND SIZE WAS MADE WITH CALLOC
   for (targeti=0; targeti < numOfTargets; targeti++){
-    targetMagnitude = testRadius = 0;
-      
     target = &targets[targeti];
+    aSize = 0;
+    getSendArray1Target(headnode, radius, *target, &aSize,sendRank);
+    tsize += aSize;
+    if (aSize > 0)
+      sendArray[sendi++] = *target;
+  }
+  if (sendSize != tsize)    
+    printf("rank: %d; sendSize: %d; sendi; %d\n", sendRank, sendSize, tsize);
+}
+void getSendArray1Target(struct Gnode * anode, float radius, struct data_struct target, int *sendSize, int sendRank){
+  int i,j,k, count = 0, caSize = 0;
+  float targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
+  struct Gnode ** childArray = (struct Gnode **)malloc(global_num_ranks*sizeof(struct Gnode *));
+  char fname[80];
+  FILE *myfile;
+  //struct Gnode * childArray[global_num_ranks];
+  //sprintf(fname,"/home/gst2d/Final/TargetidsizeG%03u.txt", anode->this_rank);
+  //if (target.num == 10000000039){
+  //  //sprintf(fname, "/home/gst2d/Final/Trace.txt");
+  //  sprintf(fname,"/home/gst2d/Final/nodesG%03u.txt", my_global_rank);
+  //  
+  //fprintf(myfile,"%Ld\n",target.num);
+  //}
+  for (i=0;i<3;i++){
+    targetDir[i] = (target.xyz[i]-anode->center->xyz[i]);
+    targetMagnitude += targetDir[i]*targetDir[i];
+  }
+  
+  targetMagnitude = sqrt(targetMagnitude);
+  for (i=0;i<3;i++){
+    targetDir[i] = targetDir[i]/targetMagnitude;
+    targetDir[i] *= anode->maxRadius;
+    targetPoint[i] = anode->center->xyz[i] + targetDir[i];
+    testRadius += pow(target.xyz[i] - targetPoint[i],2);
+  }
+  testRadius = sqrt(testRadius);
+  if (targetMagnitude < anode->maxRadius || testRadius < radius){ //THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
+    caSize += 2;
+    childArray[0] = anode->left; //, radius, target, sendSize);
+    childArray[1] = anode->right;    
+  }
+  
+  //if (target.num == 10000000039)
+    //fprintf(myfile,"caSize: %d, targetMagnitude: %f, maxRadius: %f, testRedius: %f, radius: %f\n", caSize, targetMagnitude,anode->maxRadius, testRadius,radius);
+  //if (target.num == 10000000039){
+  //  myfile = fopen(fname, "a");
+  //  fprintf(myfile,"caSize: %d\n",caSize);
+  //  fclose(myfile);
+  //  printGNode(anode);
+  //}
+  while (caSize > 0){
+    anode = childArray[0];
+    targetMagnitude = testRadius = 0;
     for (i=0;i<3;i++){
-      targetDir[i] = (target->xyz[i]-anode->center->xyz[i]);
+      targetDir[i] = (target.xyz[i]-anode->center->xyz[i]);
       targetMagnitude += targetDir[i]*targetDir[i];
     }
+    
     targetMagnitude = sqrt(targetMagnitude);
     for (i=0;i<3;i++){
       targetDir[i] = targetDir[i]/targetMagnitude;
       targetDir[i] *= anode->maxRadius;
       targetPoint[i] = anode->center->xyz[i] + targetDir[i];
-      testRadius += pow(target->xyz[i] - targetPoint[i],2);
-      
-    
+      testRadius += pow(target.xyz[i] - targetPoint[i],2);
     }
     testRadius = sqrt(testRadius);
+    //if (target.num == 10000000039){
+    //  myfile = fopen(fname, "a");
+    //  fprintf(myfile,"caSize: %d\n",caSize);
+    //  fprintf(myfile,"%f\t%f\t%f\n",target.xyz[0],target.xyz[1],target.xyz[2]);
+    //  fprintf(myfile,"caSize: %d, targetMagnitude: %f, maxRadius: %f, testRedius: %f, radius: %f\n", caSize, targetMagnitude,anode->maxRadius, testRadius,radius);
+    //  
+    //  fclose(myfile);
+    //  printGNode(anode);
+    //}
     if (targetMagnitude < anode->maxRadius || testRadius < radius){ //THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
-      
-      sendArray[sendi++] = *target;
-      
+      if (anode->num_below > 1){
+	for (i=0;i<caSize;i++)
+	  childArray[i] = childArray[i+1];
+	caSize += 1;
+	childArray[caSize-2] = anode->left; //, radius, target, sendSize);
+	childArray[caSize-1] = anode->right;    
+      }else{
+	for (i=0;i<caSize;i++)
+	  childArray[i] = childArray[i+1];
+	caSize -= 1;
+	if (anode->this_rank == sendRank){
+	  *sendSize+= 1;
+	  return;
+	}
+	//sprintf(fname,"/home/gst2d/Final/TargetidsizeG%03u.txt", anode->this_rank);
+	//myfile = fopen(fname,"a");
+	//fprintf(myfile,"%Ld\n",target.num);
+	//fclose(myfile);
+	
+      }
+    }else{
+      for (i=0;i<caSize;i++)
+	  childArray[i] = childArray[i+1];
+      caSize -= 1;
     }
+    //if (target.num == 10000000039)
+    //  fprintf(myfile,"caSize: %d, targetMagnitude: %f, maxRadius: %f, testRedius: %f, radius: %f\n", caSize, targetMagnitude,anode->maxRadius, testRadius,radius);
+    
   }
+  //if (target.num == 10000000039)
+  //  fclose(myfile);
+  free(childArray);
 }
 
 void initAssigned(struct Gnode * headnode){
@@ -394,7 +634,6 @@ void globalTreeMaster(struct Gnode *Gtree, struct node *localHead){
   struct Gnode *currNode;
   MPI_Status mystat;
   int i,j,k;
-  
   //=============================== 
   //BUILD GLOBAL TREE ON RANK ZERO
   //=============================== 
@@ -424,6 +663,7 @@ void globalTreeMaster(struct Gnode *Gtree, struct node *localHead){
 	  }
 	  currNode->this_rank = j;
 	  getGNode(currNode);
+	  //printGNode(currNode);
 	  currNode = currNode->parent;
 	  j--;
 	  if (j==0){
@@ -433,6 +673,7 @@ void globalTreeMaster(struct Gnode *Gtree, struct node *localHead){
 		currNode->min[i] = currNode->left->min[i];  
 	      }
 	      getGNode(currNode);
+	      //printGNode(currNode);
 	      currNode = currNode->parent;	      
 	      currNode = currNode->left;
 	    }else if (global_num_ranks == 2){
@@ -452,6 +693,7 @@ void globalTreeMaster(struct Gnode *Gtree, struct node *localHead){
 	      currNode->min[i] = currNode->left->min[i];  
 	    }
 	    getGNode(currNode);
+	    //printGNode(currNode);
 	    currNode = currNode->parent;
 	  }
 	}
@@ -472,6 +714,7 @@ void globalTreeMaster(struct Gnode *Gtree, struct node *localHead){
 	  
 	  currNode->this_rank = 0;
 	  getGNode(currNode);
+	  //printGNode(currNode);
 	  currNode = currNode->parent;
 	  
 	}else{
@@ -486,6 +729,7 @@ void globalTreeMaster(struct Gnode *Gtree, struct node *localHead){
 	      currNode->min[i] = currNode->left->min[i];  
 	    }
 	    getGNode(currNode);
+	    //printGNode(currNode);
 	    currNode = currNode->parent;
 	  }
 	}
@@ -501,6 +745,7 @@ void globalTreeMaster(struct Gnode *Gtree, struct node *localHead){
       Gtree->min[i] = Gtree->left->min[i];
     }
     getGNode(Gtree);
+    //printGNode(currNode);
   }else{
     
     for (i=0;i<3;i++){

@@ -1,4 +1,4 @@
-/home/tab7v/localstorage/public/coms7900-data/binary/bdatafile00501.bin
+/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile00501.bin
             TargetID	      0.01	      0.05	       0.1
          10000000001	         5	       261	       413
          10000000002	         0	         2	        29

@@ -77,7 +77,7 @@ void readFromFileAllRead(int sizeOnAll, void* varray ){
     offset = (startline-1)*dataSize;
   }
   //  printf("\nmy_rank %d\ttsize  %Lu\toffset %Lu\tfile_no %Lu\tstart_line %Lu\tsize %Lu\n", my_rank, tsize, offset, file_no, startline, size);
-   sprintf(fname,"/home/tab7v/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", file_no);
+   sprintf(fname,"/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", file_no);
   
   if ((fp = fopen(fname, "rb")) == NULL){
     printf("File DNE: %s\n", fname);
@@ -117,7 +117,7 @@ void readFromFileAllRead(int sizeOnAll, void* varray ){
 
       num_of_reads++;
     }else{
-      sprintf(fname,"/home/tab7v/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", ++file_no);
+      sprintf(fname,"/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", ++file_no);
       if ((fp = fopen(fname, "rb")) == NULL){
 	printf("File DNE: %s\n", fname);
 	MPI_Finalize();
@@ -147,7 +147,7 @@ void readFile1(int size, void * varray){
   //  printf("size_on_nodes = %d\n", size_on_nodes);
   if (my_rank  ==  num_ranks-1){
     struct data_struct * temp_array = (struct data_struct *) malloc(size_on_nodes * sizeof(struct data_struct));
-    sprintf(fname,"/home/tab7v/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", file_no);
+    sprintf(fname,"/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", file_no);
     if ((fp = fopen(fname, "rb")) == NULL){
 	MPI_Finalize();
 	printf("Unable to open file %s\n", fname);
@@ -164,7 +164,7 @@ void readFile1(int size, void * varray){
 	  array[i++] = temp; 
 	}else{
 	  fclose(fp);
-	  sprintf(fname,"/home/tab7v/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", ++file_no);
+	  sprintf(fname,"/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile%05u.bin", ++file_no);
 	  i--;
 	  if ( (fp = fopen(fname, "rb")) != NULL)
 	    continue;
@@ -192,7 +192,10 @@ void printFile( const int size, void* varray ){
   //Read in file and store in array
   struct data_struct  *array = (struct data_struct *) varray;
   int i;
+  char fname[20];
+  sprintf(fname,"/home/gst2d/Final/nodesF%03u.txt", my_global_rank);
+  FILE *myfile = fopen(fname, "a");
   for (i = 0; i < size; i++)
-      printf("%Lu\t%0.15f\t%0.15f\t%0.15f\n", array[i].num, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
-
+    fprintf(myfile,"%Lu\t%0.15f\t%0.15f\t%0.15f\n", array[i].num, array[i].xyz[0], array[i].xyz[1], array[i].xyz[2]);
+  fclose(myfile);
 }

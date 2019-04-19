@@ -11,8 +11,8 @@ def main():
         ot.write("DataPoints;Nodes;createComms;readPoints;getLocalHead;buildGlobalTree;readTargets;getSendSize;buildLocalTree;sendSendSize;assignTargets;localCount;globalCount;totalTime\n")
     open("error.txt", "w").close()
     numtest = 1
-    targets = 20 # 20000000
-    cpu = "intel.q" #"amd8.q"  qconf -sql
+    targets = 10000
+    cpu = "intel.q" #"amd8.q" #  qconf -sql
     first = 32
     ranks = []
     rankIncrements = 2
@@ -23,8 +23,8 @@ def main():
     
     ranks = [16, 32, 64, 128]
     dpranks = [[10000000,50000000,100000000],[10000000,50000000,100000000],[10000000,50000000,100000000],[50000000,100000000]]
-    ranks = [8]
-    dpranks = [[500]]
+    ranks = [64]
+    dpranks = [[100000]]
     multi = -1
     #mult = [1,2,5]
     for rank in ranks:
@@ -52,7 +52,7 @@ def main():
                              "#$ -q "+cpu+"\n"
                              
                              
-                             "mpirun -np $NSLOTS $HOME/COMS7900/tttt/prof_main " + str(datapoint) + " " + str(targets) + " 2>> $HOME/COMS7900/tttt/error.txt 1>> $HOME/COMS7900/tttt/time.txt  \n")
+                             "mpirun -np $NSLOTS $HOME/Final/prof_main " + str(datapoint) + " " + str(targets) + " 2>> $HOME/Final/error.txt 1>> $HOME/Final/time.txt  \n")
    
                 start = time.time()
                 o = subprocess.call(["qsub", "qtest3.sub"]);

@@ -69,6 +69,46 @@ void deleteComms(){
   free(tempCollection);
 }
 
+void printLTree(struct node *anode, struct node **cnode){
+  int caCount = 1,i=0, num = anode->num_below;
+  char fname[20];
+  sprintf(fname,"/home/gst2d/Final/nodes%03u.txt", my_global_rank);
+  FILE *myfile = fopen(fname, "w");
+  cnode[0] = anode;
+  while (caCount > 0){
+    anode = cnode[0];
+    if (anode->num_below > 1){
+      for (i=0;i<caCount;i++)
+	cnode[i] = cnode[i+1];
+      caCount++;
+      if (caCount > num-1){
+	printf("rank: %d CA COUNT TOO BIG", my_global_rank);
+	return;
+      }
+      cnode[caCount-2] = anode->left;
+      cnode[caCount-1] = anode->right;
+      //fprintf(myfile,"caCount: %03d;\nMax: (%15f,%15f,%15f);\nMin: (%15f,%15f,%15f);\nmaxRadius: %15f;\nnum_below: %15u\n========\n",
+      //	  caCount,
+      //	  anode->max[0],anode->max[1],anode->max[2],
+      //	  anode->min[0],anode->min[1],anode->min[2],
+      //	  anode->maxRadius,
+      //	  anode->num_below);
+       
+    }else{
+      for (i=0;i<caCount;i++)
+	cnode[i] = cnode[i+1];
+      caCount--;
+      //fprintf(myfile,": %03d;\npointId: %:Ld;center: (%15f,%15f,%15f);\nnum_below: %15u\n========\n",
+      //	      caCount,
+      //	      anode->center->num,
+      //	      anode->center->xyz[0],anode->center->xyz[1],anode->center->xyz[2],
+      // 	      anode->num_below);
+    }
+
+  }
+  fclose(myfile);
+}
+
 int main(int argc, char* argv[]) {
   if (argc < 2){
     printf("NEED 1 args: number of data points\n");
@@ -79,18 +119,18 @@ int main(int argc, char* argv[]) {
     targetSize = atoi(argv[2]);
   }
   timePrint = 1;
-  char timeName[80] = "/home/tab7v/COMS7900/tttt/time.txt";
+  char timeName[80] = "/home/gst2d/Final/time.txt";
   FILE *timeFile;
   int datapoints = atoi(argv[1]);
   int num;
   int i, j, k, l, colIndex = 0, mymid, timeIndex = 1, timeStops = 12 ;
-  int beginflag=0,readflag=0, lhflag=0, gtreeflag=0, readtflag=0, getsizeflag=0;
-  int ltreeflag=0,sendsizeflag=0,assigntargetflag=0, localcountflag=0,sumlocalcountflag=0;
-  int endflag=0;
+  int beginflag=1,readflag=1, lhflag=1, gtreeflag=1, readtflag=1, getsizeflag=1;
+  int ltreeflag=1,sendsizeflag=1,assigntargetflag=1, localcountflag=1,sumlocalcountflag=1;
+  int endflag=1;
   maxminflag=largestdimflag=globalsortflag=0;
   getbucketsflag=getcountsflag=inAdjustLflag=afterAdjustLflag=Bcastflag=0;
   float startTime[timeStops], endTime[timeStops], avgTime[timeStops], dummyTime[timeStops];
-  struct node headNode, *localHead, *buildLocalHead;
+  struct node headNode, *localHead, *buildLocalHead, *tnode;
   struct Gnode Gtree, *currNode;
   MPI_Status mystat;
   
@@ -101,7 +141,11 @@ int main(int argc, char* argv[]) {
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   global_num_ranks = num_ranks;
   my_global_rank = my_rank;
-  
+  if ((int)datapoints/num_ranks < global_num_ranks){
+    printf("TOO FEW DATAPOINTS\n");
+    MPI_Finalize();
+    return 0;
+  }
   
   if (timePrint == 1){
     //printf("%d,%d,%d",datapoints, 
@@ -114,17 +158,13 @@ int main(int argc, char* argv[]) {
   MPI_Comm_create( dup_comm_world, world_group, &MPI_LOCAL_COMM );
   if (my_rank == num_ranks-1){
     num = (int)datapoints/num_ranks + datapoints%num_ranks;
+    
   }else{
 
     num = (int)datapoints/num_ranks;
   }
 
-   struct data_struct* array  = (struct data_struct *) malloc(num * sizeof(struct data_struct));
-  create_array_datatype();
-  readFromFileAllRead(datapoints, array );
-//  printFile(num, array);
-//  MPI_Finalize();
-//  return 0;
+  
 
   //=============================== 
   // CREATE COMM COLLECTION
@@ -175,8 +215,6 @@ int main(int argc, char* argv[]) {
       //fclose(timeFile);
     }
   }
-
-
   
   //=============================== 
   //READ
@@ -184,6 +222,12 @@ int main(int argc, char* argv[]) {
   if (timePrint == 1){
     startTime[timeIndex] = timestamp();    
   }
+
+  struct data_struct* array  = (struct data_struct *) malloc(num * sizeof(struct data_struct));
+  create_array_datatype();
+  readFromFileAllRead(datapoints, array );
+  //printFile(num, array);
+  
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
     dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
@@ -196,6 +240,7 @@ int main(int argc, char* argv[]) {
   }
   if (readflag == 1)
     printf("READPOINTS gid%d\n", my_global_rank);
+  
   //=============================== 
   // GET LOCAL HEAD
   //=============================== 
@@ -222,6 +267,13 @@ int main(int argc, char* argv[]) {
   }
   if (lhflag == 1)
     printf("GETLOCALHEAD gid%d\n", my_global_rank);
+  //printf("myrank: %d; num: %d\n", my_global_rank, num);
+  MPI_Allreduce(&num,&k,1,MPI_INT,MPI_MIN,MPI_COMM_WORLD);
+  if ( k < 4){
+    printf("A RANK HAS < 4\n");
+    MPI_Finalize();
+    return 0;
+  }
   
   //=============================== 
   //BUILD GLOBAL TREE ON RANK ZERO
@@ -241,17 +293,13 @@ int main(int argc, char* argv[]) {
   if (gtreeflag == 1)
     printf("BUILDGLOBALTREE gid%d\n", my_global_rank);
   
-
-
-
-
   //========================
   //
   //                                           TARGETS SECTION
   //
   //========================
   
-  char fname[80] = "/home/tab7v/localstorage/public/coms7900-data/binary/bdatafile00501.bin";
+  char fname[80] = "/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile00501.bin";
   
   struct data_struct* targetArray  = (struct data_struct *) malloc(targetSize * sizeof(struct data_struct));
   int * sendSize = (int *)calloc(global_num_ranks,sizeof(int));
@@ -262,6 +310,7 @@ int main(int argc, char* argv[]) {
   if (timePrint == 1){
       startTime[timeIndex] = timestamp();    
     }
+  
   if (my_global_rank == 0){
     
     readFromFile(fname, targetSize, targetArray );
@@ -291,9 +340,12 @@ int main(int argc, char* argv[]) {
     getSendSize1(&Gtree, 0.1, targetArray, targetSize, sendSize);
     for (i=0;i<global_num_ranks;i++){
       totalSendSize += sendSize[i];
-    }   
+      //printf("sendsize[%d]: %d\n", i, sendSize[i]);
+    }
+    
   }
-
+  MPI_Barrier(MPI_COMM_WORLD);
+  //printf("my_rank: %d; num: %d\n", my_global_rank, num);
   
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
@@ -329,7 +381,9 @@ int main(int argc, char* argv[]) {
   }
   if (ltreeflag == 1)
     printf("LOCALTREEBUILD gid%d\n", my_global_rank);
- 
+  
+  
+  
   //========================
   //   RANK 0 SENDS NUM OF TARGETS TO OTHER RANKS
   //========================
@@ -361,21 +415,25 @@ int main(int argc, char* argv[]) {
     startTime[timeIndex] = timestamp();    
   }
   if (my_global_rank == 0){
-    for (i = 0;i<global_num_ranks;i++){
-      if (sendSize[i] > 0)
-	allSendArrays[i] = (struct data_struct *) malloc(sendSize[i] * sizeof(struct data_struct)); 
-    }
+    //for (i = 0;i<global_num_ranks;i++){
+    //  if (sendSize[i] > 0)
+    //	allSendArrays[i] = (struct data_struct *) malloc(sendSize[i] * sizeof(struct data_struct)); 
+    //}
     mySendSize = sendSize[0];    
     for (i = 1;i<global_num_ranks;i++){
       if (sendSize[i] > 0){
-	getSendArray(&Gtree, 0.1, targetArray, targetSize, allSendArrays[i], sendSize[i], i);
-
-	MPI_Send(allSendArrays[i], sendSize[i], array_type, i, 0, MPI_COMM_WORLD);
+	//getSendArray(&Gtree, 0.1, targetArray, targetSize, allSendArrays[i], sendSize[i], i);
+	//MPI_Send(allSendArrays[i], sendSize[i], array_type, i, 0, MPI_COMM_WORLD);
+	sendArray = (struct data_struct *) malloc(sendSize[i] * sizeof(struct data_struct)); 
+	getSendArray(&Gtree, 0.1, targetArray, targetSize, sendArray, sendSize[i], i);
+	MPI_Send(sendArray, sendSize[i], array_type, i, 0, MPI_COMM_WORLD);
+	MPI_Recv(&j, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &mystat);
+	free(sendArray);
       }
     }
     if (mySendSize > 0){
       sendArray = (struct data_struct *) malloc(mySendSize * sizeof(struct data_struct));
-      printf("\ntargetSize %d\tmySendSize %d\n", targetSize, mySendSize); 
+      
       getSendArray(&Gtree, 0.1, targetArray, targetSize, sendArray, sendSize[0], 0);
       //printFile(mySendSize, sendArray);
     }
@@ -383,12 +441,14 @@ int main(int argc, char* argv[]) {
   }else{
     if (mySendSize > 0){
       sendArray = (struct data_struct *) malloc(mySendSize * sizeof(struct data_struct)); 
+      //printFile(mySendSize, sendArray);
       MPI_Recv(sendArray, mySendSize, array_type, 0, 0, MPI_COMM_WORLD, &mystat);    
+      i = 1;
+      MPI_Send(&i,1,MPI_INT,0,0,MPI_COMM_WORLD);
     }
   }
-
-
-
+  
+  
 
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
@@ -400,41 +460,62 @@ int main(int argc, char* argv[]) {
       //fclose(timeFile);
     }
   }
+  
   if (assigntargetflag == 1)
     printf("ASSIGNTARGET gid%d\n", my_global_rank);
 
-
-  
+  MPI_Barrier(MPI_COMM_WORLD);
   float radius[3] = {0.01, 0.05, 0.1};
   int localCount = 0, totalCount, tgi = 0, sendi = 0, radi = 0;
   long int *radiCounts = (long int *) malloc(4*mySendSize*sizeof(long int));
   long int *allRadiCounts;
-  int *tsendSize;
-  if (my_global_rank == 0)
-    printf("radiCountsSize %d\tmySendSize %d\n\n\n\n", 4*mySendSize, mySendSize);
+  int *tsendSize, maxSendSize;
+  struct node ** childArray = (struct node **)malloc( localHead->num_below*sizeof(struct node *));
+  
+  //if (my_global_rank == 0)
+  //  printf("radiCountsSize %d\tmySendSize %d\n\n\n\n", 4*mySendSize, mySendSize);
   
   //========================
   //   EACH RANK COUNT LOCALLY
   //========================
+  //MPI_Allreduce(&mySendSize, &maxSendSize, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+  //char lfilename[80];
+  //sprintf(lfilename,"/home/gst2d/Final/local%03u.txt", my_global_rank);
+  //FILE *lfile = fopen(lfilename, "w");
+  
   if (timePrint == 1){
     startTime[timeIndex] = timestamp();    
   }
+  //printf("rank: %d, SENDSIZE: %d\n", my_global_rank, mySendSize);
+  //fprintf(lfile,"SENDSIZE: %d\n", mySendSize);
+  
   for (sendi =0; sendi<mySendSize; sendi++){
     radi = sendi*4;
     radiCounts[radi++] = sendArray[sendi].num;
-    if (my_global_rank == 0)
-      printf("radiCounts %Lu\t", radiCounts[radi-1]);
+    //printf("rank: %d, sendi: %d; targetId: %Ld; \n", my_global_rank,sendi, sendArray[sendi].num);
+    //fprintf(lfile, "sendi: %d; targetId: %Ld; ", sendi, sendArray[sendi].num);
+    //if (sendi < mySendSize){
     for (i=0;i<3;i++){
-	
-	radiCounts[radi++] = localSearch(localHead, radius[i], sendArray[sendi]);	
-	if (my_global_rank == 0)
-	  printf("%Lu\t", radiCounts[radi-1]);
-    }    
-    if (my_global_rank == 0)
-      printf("\n");
+      //fprintf(lfile,"%f ", radius[i]);
+      radiCounts[radi++] = localSearch(localHead, radius[i], sendArray[sendi], childArray);	
+      
+    }
+    //}
+    //printf("rank: %d FIN%d\n", my_global_rank, sendi);
+    //fprintf(lfile, "\n");
+    //MPI_Barrier(MPI_COMM_WORLD);
+    //for (i=0;i<num;i++){
+    //  if (sendArray[sendi].num == array[i].num){
+    //	if (radiCounts[radi-3] == 0)
+    //	  printf("myrank: %d; targetId: %Ld\n", my_global_rank, sendArray[sendi].num);
+    //	break;
+    //  }
+    //}
+    
   }
-
-
+  free(childArray);
+  MPI_Barrier(MPI_COMM_WORLD);
+  //fclose(lfile);
 
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
@@ -446,10 +527,11 @@ int main(int argc, char* argv[]) {
       //fclose(timeFile);
     }
   }
-
+  
   if (localcountflag == 1)
     printf("LOCALCOUNTBegin gid%d\n", my_global_rank);
-
+  
+  
   if (timePrint == 1){
     startTime[timeIndex] = timestamp();    
   }
@@ -475,7 +557,7 @@ int main(int argc, char* argv[]) {
     //========================
     //   SUM COUNTS FOR RANK 0
     //========================
-    printf("HELLO GUYS BEFORE\n");
+    //printf("HELLO GUYS BEFORE\n");
     for (radi=0;radi<tsendSize[my_global_rank];radi+=4){
       k = (int)(radiCounts[radi]-targetArray[0].num)*3;
       //      printf("k %d\t radi %d\t tSendSize %d\tallRadicountsSize %d\tradiCounts %Lu\ttargetArray %Lu\n", k, radi, tsendSize[my_global_rank], 3*targetSize, radiCounts[radi], targetArray[0].num);
@@ -488,7 +570,7 @@ int main(int argc, char* argv[]) {
       //========================
     //  SUM COUNTS FOR OTHER RANKS
     //========================
-    i = 1;
+    i = 0;
     while (i<nonZeroRanks){ 
 
       MPI_Probe(MPI_ANY_SOURCE, 123, MPI_COMM_WORLD, &stat);
@@ -497,8 +579,8 @@ int main(int argc, char* argv[]) {
       
       radiCounts = (long int *)malloc(tsendSize[d]*sizeof(long int));      
       MPI_Recv(radiCounts,tsendSize[d] , li_type, d, 123, MPI_COMM_WORLD, &mystat);
+      //printf("Num %d to %d\n", i, d);
       i++;
-      printf("Num %d to %d\n", i, d);
       for (radi=0;radi<tsendSize[d];radi+=4){      	
       	k = (int)(radiCounts[radi]-targetArray[0].num)*3;
       	for (j=1; j<=3;j++){
@@ -515,14 +597,8 @@ int main(int argc, char* argv[]) {
     
   }
   MPI_Barrier(MPI_COMM_WORLD);
-
-
-  MPI_Finalize();
-  return 0;
-
-
-
-
+  
+  
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
     dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
@@ -558,7 +634,8 @@ int main(int argc, char* argv[]) {
     
     printf("%20s\t%10s\t%10s\t%10s\n", "TargetID", "0.01", "0.05","0.1");
     for (tgi =0; tgi<targetSize; tgi++){
-      printf("%20Lu\t%0.15Lfu\t%0.15Lfu\t%0.15Lf",targetArray[tgi].num, targetArray[tgi].xyz[0], targetArray[tgi].xyz[1], targetArray[tgi].xyz[2]);
+      //printf("%20Lu\t%0.15f\t%0.15f\t%0.15f",targetArray[tgi].num, targetArray[tgi].xyz[0], targetArray[tgi].xyz[1], targetArray[tgi].xyz[2]);
+      printf("%20Lu",targetArray[tgi].num);
       k = tgi*3;
       for (i=0;i<3;i++){
 	printf("\t%10Lu",allRadiCounts[ k+i]);

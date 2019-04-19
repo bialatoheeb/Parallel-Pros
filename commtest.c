@@ -244,7 +244,7 @@ void createCommWorlds(int mymin, int mymax, struct commworlds *acgrange){
   int ranges[1][3];// = {0,0,0};
   
   acgrange->this_num_ranks = mymax-mymin+1;
-  char fname[80] = "/home/tab7v/COMS7900/commoutput.txt";
+  char fname[80] = "/home/gst2d/COMS7900/commoutput.txt";
   FILE * afile=fopen(fname,"a");
   //printf("num_ranks: %d, my_global_rank: %d, my_rank: %d\n", acgrange->this_num_ranks, my_global_rank, my_rank);
   fclose(afile);
@@ -336,7 +336,7 @@ int main(int argc, char* argv[]) {
   //}else{
   //  createCommWorlds(mymid, global_num_ranks-1, myComms);
   //}
-  //char fname[80] = "/home/tab7v/COMS7900/commoutput.txt";
+  //char fname[80] = "/home/gst2d/COMS7900/commoutput.txt";
   //FILE * afile=fopen(fname,"a");
   //printf("my_global_rank: %d", my_global_rank);
   //fclose(afile);

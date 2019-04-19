@@ -9,6 +9,7 @@ struct node * buildTreeGlobal(void *varray, int num, void *vnode, int colIndex){
 
     // BINARY SEARCH FOR MAX AND MIN
     getMaxMinGlobal(array, num, colIndex, anode->max, anode->min); //arrayMin);
+    anode->num_below= -1;
     if (maxminflag == 1)
       printf("GETMAXMIN gid%d\n", my_global_rank);
     getLargestDimensionGlobal(anode->max, anode->min, &colIndex);
@@ -53,13 +54,13 @@ void getNodeGlobal(int num, void *vnode, int globalNum){
   
 }
 
-void printNodeGlobal(void *vnode){
+void  printNodeGlobal(void *vnode){
   struct node *anode = (struct node *)vnode;
   char fname[20];
-  sprintf(fname,"/home/tab7v/COMS7900/nodes%03u.txt", my_global_rank);
+  sprintf(fname,"/home/gst2d/Final/nodes%03u.txt", my_global_rank);
   FILE *myfile = fopen(fname, "a");
-  fprintf(myfile,"LRank: %03u;\nMax: (%15Lf,%15Lf,%15Lf);\nMin: (%15Lf,%15Lf,%15Lf);\nCenter: (%15Lf,%15Lf,%15Lf);\nmaxRadius: %15Lf;\nnum_below: %15u\n========\n",
-	  my_rank,
+  fprintf(myfile,"LRank: %03u;\nMax: (%15f,%15f,%15f);\nMin: (%15f,%15f,%15f);\nCenter: (%15f,%15f,%15f);\nmaxRadius: %15f;\nnum_below: %15u\n========\n",
+	  my_global_rank,
 	  anode->max[0],anode->max[1],anode->max[2],
 	  anode->min[0],anode->min[1],anode->min[2],
 	  anode->center->xyz[0],anode->center->xyz[1],anode->center->xyz[2],
@@ -117,10 +118,10 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, float *arrayMax, flo
     }
   }
 
-  //MPI_Allgather(arrayMax, 3, ld_type, allMax, 3,ld_type, myCommCollection->localcomm); 
-  //MPI_Allgather(arrayMin, 3, ld_type, allMin, 3,ld_type, myCommCollection->localcomm); 
-  AllgatherLD(arrayMax, allMax, 3);
-  AllgatherLD(arrayMin, allMin, 3);
+  MPI_Allgather(arrayMax, 3, ld_type, allMax, 3,ld_type, myCommCollection->localcomm); 
+  MPI_Allgather(arrayMin, 3, ld_type, allMin, 3,ld_type, myCommCollection->localcomm); 
+  //AllgatherLD(arrayMax, allMax, 3);
+  //AllgatherLD(arrayMin, allMin, 3);
   
   
   if (colIndex < 0){
@@ -161,7 +162,7 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, float *arrayMax, flo
 struct node * splitRanks(void *varray, int num, void *vnode, int colIndex){
   struct data_struct* array  = (struct data_struct *)varray;
   struct node *anode = (struct node *)vnode;
-  char fname[71] = "/home/tab7v/COMS7900/aout.txt";
+  char fname[71] = "/home/gst2d/COMS7900/aout.txt";
   int i = 0, j, *size;
   if (num_ranks > 1){
     anode->left = (struct node *)malloc(sizeof(struct node));

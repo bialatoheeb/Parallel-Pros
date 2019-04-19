@@ -14,7 +14,7 @@ functions= prof_main.o \
 	functionsSeqSearch.o \
 	functionsTrees.o
 
-main: $(functions)
+prof_main: $(functions)
 	mpicc -o prof_main $(functions) -lm
 
 
