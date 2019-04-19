@@ -26,7 +26,7 @@ struct data_struct *  AllToAllSend(void * sends, int  *total_recv_counts, void *
   }
 
   struct data_struct *recv_array = (struct data_struct *) malloc((*total_recv_counts) * sizeof(struct data_struct));
-  MPI_Alltoallv(send_array, send_counts, send_displs, array_type, recv_array, recv_counts, recv_displs, array_type, myCommCollection->localcomm);
+  MPI_Alltoallv(send_array, send_counts, send_displs, array_type, recv_array, recv_counts, recv_displs, array_type, MPI_LOCAL_COMM);
   //for(i=0; i < num_ranks; i++){ // Send and receive for each rank
   //  if (my_rank ==  i){  // Send sequentially for each rank
   //    for (j=0; j < num_ranks; j++){
@@ -46,7 +46,7 @@ struct data_struct *  AllToAllSend(void * sends, int  *total_recv_counts, void *
   //
   //}
   
-  MPI_Barrier(myCommCollection->localcomm);
+  MPI_Barrier(MPI_LOCAL_COMM);
   free(send_array);
   return recv_array;
 }

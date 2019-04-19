@@ -34,7 +34,7 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //
   //============================
 
-  MPI_Allgather(nodeDivL, num_ranks+2,ld_type, LDivinfo,num_ranks+2,ld_type, myCommCollection->localcomm); 
+  MPI_Allgather(nodeDivL, num_ranks+2,ld_type, LDivinfo,num_ranks+2,ld_type, MPI_LOCAL_COMM); 
   //AllgatherLD(nodeDivL, LDivinfo, num_ranks+2);
   
   //============================
@@ -189,7 +189,7 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
       mysmallest = smallest;
   }
   smallest = mysmallest;
-  MPI_Allgather(&mysmallest, 1, ld_type, allSmallest, 1, ld_type, myCommCollection->localcomm);
+  MPI_Allgather(&mysmallest, 1, ld_type, allSmallest, 1, ld_type, MPI_LOCAL_COMM);
   //AllgatherLD(&mysmallest, allSmallest, 1);
   smallest = allSmallest[0];
   for (i=1;i<num_ranks;i++){
@@ -295,7 +295,7 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
       //my_Bcast_int(&keepGoing, 1, 0);
       //my_Bcast_int(&i, 1, 0);
       //my_Bcast_int(myflags, 3, 0);
-      MPI_Bcast(myflags, 3, MPI_INT, 0, myCommCollection->localcomm);
+      MPI_Bcast(myflags, 3, MPI_INT, 0, MPI_LOCAL_COMM);
       *balanced = myflags[0];
       keepGoing = myflags[1];
       i = myflags[2];
@@ -304,10 +304,10 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
       //}
       if (*balanced == 0 &&  keepGoing == 0){
 	//my_Bcast_ld(L, num_ranks, 0);
-	MPI_Bcast(L, num_ranks, ld_type, 0, myCommCollection->localcomm);
+	MPI_Bcast(L, num_ranks, ld_type, 0, MPI_LOCAL_COMM);
 	getCounts(num, colIndex, array, L, totalCount, allCounts);
 	//my_Bcast_int(&startIndex, 1, 0);
-	MPI_Bcast(&startIndex, 1, MPI_INT, 0, myCommCollection->localcomm);
+	MPI_Bcast(&startIndex, 1, MPI_INT, 0, MPI_LOCAL_COMM);
       }
       
 
@@ -355,10 +355,10 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
   }
   if (afterAdjustLflag == 1)
     printf("AFTERADJUSTL gid%03d\n", my_global_rank);
-  MPI_Bcast(&smallestDiffBool, 1, MPI_INT, 0, myCommCollection->localcomm);
+  MPI_Bcast(&smallestDiffBool, 1, MPI_INT, 0, MPI_LOCAL_COMM);
   //my_Bcast_int(&smallestDiffBool, 1, 0);
   if (smallestDiffBool == 0){
-    MPI_Bcast(L, num_ranks, ld_type, 0, myCommCollection->localcomm);
+    MPI_Bcast(L, num_ranks, ld_type, 0, MPI_LOCAL_COMM);
     //my_Bcast_ld(L, num_ranks, 0);
     getCounts(num, colIndex, array, L, totalCount, allCounts);
   }
@@ -461,7 +461,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   //
   //============================
   
-  MPI_Allgather(nodeCount, num_ranks,MPI_INT, allCounts,num_ranks,MPI_INT, myCommCollection->localcomm);
+  MPI_Allgather(nodeCount, num_ranks,MPI_INT, allCounts,num_ranks,MPI_INT, MPI_LOCAL_COMM);
   //AllgatherINT(nodeCount, allCounts, num_ranks);
   //============================
   //

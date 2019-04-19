@@ -123,14 +123,14 @@ int main(int argc, char* argv[]) {
   FILE *timeFile;
   int datapoints = atoi(argv[1]);
   int num;
-  int i, j, k, l, colIndex = 0, mymid, timeIndex = 1, timeStops = 12 ;
-  int beginflag=1,readflag=1, lhflag=1, gtreeflag=1, readtflag=1, getsizeflag=1;
-  int ltreeflag=1,sendsizeflag=1,assigntargetflag=1, localcountflag=1,sumlocalcountflag=1;
-  int endflag=1;
-  maxminflag=largestdimflag=globalsortflag=1;
-  getallcountflag=alltoallflag=1;
+  int i, j, k, l, colIndex = 0, mymid, timeIndex = 1, timeStops = 11 ;
+  int beginflag=0,readflag=0, lhflag=0, gtreeflag=0, readtflag=0, getsizeflag=0;
+  int ltreeflag=0,sendsizeflag=0,assigntargetflag=0, localcountflag=0,sumlocalcountflag=0;
+  int endflag=0;
+  maxminflag=largestdimflag=globalsortflag=splitranksflag=0;
+  getallcountflag=alltoallflag=0;
   getbucketsflag=getcountsflag=inAdjustLflag=afterAdjustLflag=Bcastflag=0;
-  float startTime[timeStops], endTime[timeStops], avgTime[timeStops], dummyTime[timeStops];
+  double startTime[timeStops], endTime[timeStops], avgTime[timeStops], dummyTime[timeStops];
   struct node headNode, *localHead, *buildLocalHead, *tnode;
   struct Gnode Gtree, *currNode;
   MPI_Status mystat;
@@ -170,30 +170,31 @@ int main(int argc, char* argv[]) {
   //=============================== 
   // CREATE COMM COLLECTION
   //=============================== 
-  if (timePrint == 1){
-    startTime[timeIndex] = timestamp();    
-  }
-  myCommCollection= (struct commgroupcollection *)malloc(sizeof( struct commgroupcollection));
-  MPI_Comm_group( dup_comm_world, &myCommCollection->localgroup );
-  MPI_Comm_create( dup_comm_world, myCommCollection->localgroup, &myCommCollection->localcomm );
-  myCommCollection->this_num_ranks = global_num_ranks;
-  myCommCollection->ranks = (int *)malloc(myCommCollection->this_num_ranks*sizeof(int));
-  for (i=0;i<myCommCollection->this_num_ranks;i++)
-    myCommCollection->ranks[i] = i;
-  
-  myCommCollection->next= (struct commgroupcollection *)malloc(sizeof( struct commgroupcollection));
-  myCommCollection->next->prev = myCommCollection;
-  numRanges = 1;
-  mymid = (int)global_num_ranks/2;
-  if (my_global_rank < mymid){
-    createCommCollections(0, mymid-1, myCommCollection->next);
-  }else{
-    createCommCollections(mymid, global_num_ranks-1, myCommCollection->next);
-  }
-
-  tempCollection = myCommCollection->next;
-  
-  MPI_Allreduce(&numRanges, &maxLevel, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+  //if (timePrint == 1){
+  //  startTime[timeIndex] = timestamp();    
+  //  
+  //}
+  //myCommCollection= (struct commgroupcollection *)malloc(sizeof( struct commgroupcollection));
+  //MPI_Comm_group( dup_comm_world, &myCommCollection->localgroup );
+  //MPI_Comm_create( dup_comm_world, myCommCollection->localgroup, &MPI_LOCAL_COMM );
+  //myCommCollection->this_num_ranks = global_num_ranks;
+  //myCommCollection->ranks = (int *)malloc(myCommCollection->this_num_ranks*sizeof(int));
+  //for (i=0;i<myCommCollection->this_num_ranks;i++)
+  //  myCommCollection->ranks[i] = i;
+  //
+  //myCommCollection->next= (struct commgroupcollection *)malloc(sizeof( struct commgroupcollection));
+  //myCommCollection->next->prev = myCommCollection;
+  //numRanges = 1;
+  //mymid = (int)global_num_ranks/2;
+  //if (my_global_rank < mymid){
+  //  createCommCollections(0, mymid-1, myCommCollection->next);
+  //}else{
+  //  createCommCollections(mymid, global_num_ranks-1, myCommCollection->next);
+  //}
+  //
+  //tempCollection = myCommCollection->next;
+  //
+  //MPI_Allreduce(&numRanges, &maxLevel, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
 
   //for (i=1;i<maxLevel;i++){
   //  if (i > numRanges){
@@ -205,17 +206,18 @@ int main(int argc, char* argv[]) {
   //  MPI_Barrier(MPI_LOCAL_COMM);
   //}
 
-  tempCollection = myCommCollection;
-  if (timePrint == 1){
-    endTime[timeIndex++] = timestamp();
-    dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];    
-    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD ); 
-    if (my_global_rank == 0){
-      timeFile = fopen(timeName, "a");
-      fprintf(timeFile,"%f", avgTime[timeIndex-1]);      
-      //fclose(timeFile);
-    }
-  }
+  //tempCollection = myCommCollection;
+  //if (timePrint == 1){
+  //  endTime[timeIndex++] = timestamp();
+  //  dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];    
+  //  
+  //  MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
+  //  if (my_global_rank == 0){
+  //    //timeFile = fopen(timeName, "a");
+  //    printf("%f", avgTime[timeIndex-1]);      
+  //    //fclose(timeFile);
+  //  }
+  //}
   
   //=============================== 
   //READ
@@ -232,10 +234,11 @@ int main(int argc, char* argv[]) {
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
     dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
-    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    //printf("startTime: %f endTime: %f diffTime: %f\n", startTime[timeIndex-1],endTime[timeIndex-1], dummyTime[timeIndex-1]);    
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
     if (my_global_rank == 0){
       //timefile = fopen(timeName, "a");
-      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      printf(";%f", avgTime[timeIndex-1]);
       //fclose(timeFile);
     }
   }
@@ -249,27 +252,29 @@ int main(int argc, char* argv[]) {
     startTime[timeIndex] = timestamp();    
   }
   localHead = buildTreeGlobal(array, num, &headNode, -1);
-  //deleteLocalHeadBuild(&headNode);
-  MPI_Barrier(MPI_COMM_WORLD);
-  //MPI_Comm_free(&tempCollection->localcomm);
-  //MPI_Group_free(&tempCollection->localgroup);
-  deleteComms();
-
+  
+  
 
   array = localHead->center;
   num = localHead->num_below;
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
     dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
-    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
     if (my_global_rank == 0){
       //timefile = fopen(timeName, "a");
-      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      printf(";%f", avgTime[timeIndex-1]);
       //fclose(timeFile);
     }
   }
   if (lhflag == 1)
     printf("GETLOCALHEAD gid%03d\n", my_global_rank);
+  //deleteLocalHeadBuild(&headNode);
+  MPI_Barrier(MPI_COMM_WORLD);
+  //MPI_Comm_free(&tempCollection->localcomm);
+  //MPI_Group_free(&tempCollection->localgroup);
+  //deleteComms();
+
   //printf("myrank: %d; num: %d\n", my_global_rank, num);
   MPI_Allreduce(&num,&k,1,MPI_INT,MPI_MIN,MPI_COMM_WORLD);
   if ( k < 4){
@@ -288,7 +293,7 @@ int main(int argc, char* argv[]) {
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
     dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
-    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
     if (my_global_rank == 0){
       printf(";%f", avgTime[timeIndex-1]);
     }
@@ -328,7 +333,7 @@ int main(int argc, char* argv[]) {
     if (my_global_rank == 0){
       avgTime[timeIndex-1] = dummyTime[timeIndex-1];
       //timefile = fopen(timeName, "a");
-      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      printf(";%f", avgTime[timeIndex-1]);
       //fclose(timeFile);
     }
   }
@@ -357,7 +362,7 @@ int main(int argc, char* argv[]) {
     if (my_global_rank == 0){
       avgTime[timeIndex-1] = dummyTime[timeIndex-1];
       //timefile = fopen(timeName, "a");
-      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      printf(";%f", avgTime[timeIndex-1]);
       //fclose(timeFile);
     }
   }
@@ -375,10 +380,10 @@ int main(int argc, char* argv[]) {
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
     dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
-    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
     if (my_global_rank == 0){
       //timefile = fopen(timeName, "a");
-      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      printf(";%f", avgTime[timeIndex-1]);
       //fclose(timeFile);
     }
   }
@@ -397,10 +402,10 @@ int main(int argc, char* argv[]) {
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
     dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
-    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
     if (my_global_rank == 0){
       //timefile = fopen(timeName, "a");
-      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      printf(";%f", avgTime[timeIndex-1]);
       //fclose(timeFile);
     }
   }
@@ -456,10 +461,10 @@ int main(int argc, char* argv[]) {
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
     dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
-    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
     if (my_global_rank == 0){
       //timefile = fopen(timeName, "a");
-      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      printf(";%f", avgTime[timeIndex-1]);
       //fclose(timeFile);
     }
   }
@@ -523,10 +528,10 @@ int main(int argc, char* argv[]) {
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
     dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
-    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
     if (my_global_rank == 0){
       //timefile = fopen(timeName, "a");
-      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      printf(";%f", avgTime[timeIndex-1]);
       //fclose(timeFile);
     }
   }
@@ -605,10 +610,10 @@ int main(int argc, char* argv[]) {
   if (timePrint == 1){
     endTime[timeIndex++] = timestamp();
     dummyTime[timeIndex-1] = endTime[timeIndex-1] - startTime[timeIndex-1];
-    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    MPI_Reduce( &dummyTime[timeIndex-1], &avgTime[timeIndex-1], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
     if (my_global_rank == 0){
       //timefile = fopen(timeName, "a");
-      fprintf(timeFile,";%f", avgTime[timeIndex-1]);
+      printf(";%f", avgTime[timeIndex-1]);
       //fclose(timeFile);
     }
   }
@@ -617,16 +622,16 @@ int main(int argc, char* argv[]) {
   if (timePrint == 1){
     endTime[0] = timestamp();
     dummyTime[0] = endTime[0] - startTime[0];
-    MPI_Reduce( &dummyTime[0], &avgTime[0], 1, MPI_FLOAT, MPI_MIN, 0, MPI_COMM_WORLD ); 
+    MPI_Reduce( &dummyTime[0], &avgTime[0], 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD ); 
     if (my_global_rank == 0){
       //timeFile = fopen(timeName, "a");
-      fprintf(timeFile,";%f\n", avgTime[0]);
-      fclose(timeFile);
+      printf(";%f\n", avgTime[0]);
+      //fclose(timeFile);
     }
     
   }
   
-  if (my_global_rank == 0){
+  if (my_global_rank == -1){
     
     
     ////================

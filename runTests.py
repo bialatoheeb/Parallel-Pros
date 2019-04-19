@@ -8,10 +8,10 @@ import time
 
 def main():
     with open("time.txt", "w") as ot:
-        ot.write("DataPoints;Nodes;createComms;readPoints;getLocalHead;buildGlobalTree;readTargets;getSendSize;buildLocalTree;sendSendSize;assignTargets;localCount;globalCount;totalTime\n")
+        ot.write("DataPoints;Nodes;readPoints;getLocalHead;buildGlobalTree;readTargets;getSendSize;buildLocalTree;sendSendSize;assignTargets;localCount;globalCount;totalTime\n")
     open("error.txt", "w").close()
     numtest = 1
-    targets = 10000
+    targets = 1000
     cpu = "intel.q" #"amd8.q" #  qconf -sql
     first = 32
     ranks = []
@@ -22,9 +22,9 @@ def main():
         #ranks = [i for i in range(8] #,16]
     
     ranks = [16, 32, 64, 128]
-    dpranks = [[10000000,50000000,100000000],[10000000,50000000,100000000],[10000000,50000000,100000000],[50000000,100000000]]
+    dpranks = [[10000,50000],[10000,50000,100000],[10000,50000,100000],[50000,100000]]
     ranks = [128]
-    dpranks = [[100000]]
+    dpranks = [[1000000,10000000,100000000,500000000]]
     multi = -1
     #mult = [1,2,5]
     for rank in ranks:
@@ -42,7 +42,7 @@ def main():
             for k in range(numtest):
                 print("datapoint:  ", datapoint, "num_ranks:  ", rank )
                 with open("time.txt", "a") as ot:
-                    ot.write(str(datapoint)+ ";" + str(rank) + ";")
+                    ot.write(str(datapoint)+ ";" + str(rank))
                 with open("qtest3.sub", "w") as qt:
                     qt.write("!#/bin/bash\n"
 

@@ -3,7 +3,7 @@
 
 // Dr. Butler's class
 
-float timestamp()
+double timestamp()
 {
   struct timeval timer;
 

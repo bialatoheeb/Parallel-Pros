@@ -382,9 +382,9 @@ int main(int argc, char* argv[]) {
 
   
   //for (i=0;i<numRanges;i++){
-  //  MPI_Comm_size(myCommCollection->localcomm, &num_ranks);
-  //  MPI_Comm_rank(myCommCollection->localcomm, &my_rank);
-  //  MPI_Allreduce(&num_ranks, &my_sum, 1, MPI_INT, MPI_SUM, myCommCollection->localcomm);  
+  //  MPI_Comm_size(MPI_LOCAL_COMM, &num_ranks);
+  //  MPI_Comm_rank(MPI_LOCAL_COMM, &my_rank);
+  //  MPI_Allreduce(&num_ranks, &my_sum, 1, MPI_INT, MPI_SUM, MPI_LOCAL_COMM);  
   //  printf("i: %d; num_ranks: %d, my_global_rank: %d, my_rank: %d, my_sum: %d\n", i, num_ranks, my_global_rank, my_rank, my_sum);
   //  //printf("i: %d; this_num_ranks: %d\n", i, myCommCollection->this_num_ranks);
   //  myCommCollection=myCommCollection->next;

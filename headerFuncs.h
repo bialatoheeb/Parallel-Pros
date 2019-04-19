@@ -45,7 +45,7 @@ struct commgroupcollection{
 
 //MPI_Comm MPI_COMM_WORLD;
 MPI_Comm MPI_LOCAL_COMM, MPI_TEMP_COMM, dup_comm_world;
-MPI_Group world_group;
+MPI_Group world_group, local_group;
 MPI_Datatype array_type;
 MPI_Datatype ld_type, li_type;
 MPI_Status stat;
@@ -53,7 +53,7 @@ struct commgroupcollection * myCommCollection, * tempCollection;
 int num_ranks, global_num_ranks, numRanges, maxLevel;
 int my_rank, my_global_rank;
 int timePrint;
-int maxminflag,largestdimflag,globalsortflag;
+int maxminflag,largestdimflag,globalsortflag,splitranksflag;
 int getallcountflag, alltoallflag;
 int getbucketsflag,getcountsflag,inAdjustLflag,afterAdjustLflag,Bcastflag;
 
@@ -94,7 +94,8 @@ void getLargestDimensionGlobal(float *, float *, int *);
 void getNodeGlobal(int, void *, int);
 void printNodeGlobal(void *);
 struct node * buildTreeGlobal(void *, int, void *, int);
-struct node * splitRanks(void *, int, void *, int);
+//struct node * splitRanks(void *, int , void *, void *, int );
+void splitRanks();
      
 void getArraySize(const char*, int*);
 void readFromFile(char*, const int, void*);
@@ -102,7 +103,7 @@ void readFromFileAllRead(int, void*);
 void readFile1(int , void* );
 void printFile( const int, void*);
 
-float timestamp();
+double timestamp();
 int compare_datastruct(const void*, const void*, int);
 int compare_x(const void*, const void*);
 int compare_y(const void*, const void*);
