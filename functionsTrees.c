@@ -236,16 +236,19 @@ void getSendSize1(struct Gnode * headnode, float radius, struct data_struct *tar
   int i,j,k, targeti, curr_rank = 0;
   float targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
   int * aSize = (int *)calloc(global_num_ranks,sizeof(int));
+  struct Gnode ** childArray = (struct Gnode **)malloc(global_num_ranks*sizeof(struct Gnode *));
   //SEND SIZE WAS MADE WITH CALLOC
   for (targeti=0; targeti < numOfTargets; targeti++){
     for (i=0;i<global_num_ranks;i++)
       aSize[i] = 0;
     target = &targets[targeti];
-    getSendSize1Target(headnode, radius, *target, aSize);
+    getSendSize1Target(headnode, radius, *target, aSize, childArray);
     for (i=0;i<global_num_ranks;i++){
       sendSize[i] += aSize[i];
     }
   }
+  free(aSize);
+  free(childArray);
 }
 
 //void getSendSize1Target(struct Gnode * anode, float radius, struct data_struct target, int *sendSize){
@@ -296,10 +299,10 @@ void getSendSize1(struct Gnode * headnode, float radius, struct data_struct *tar
 //  }
 //}
 
-void getSendSize1Target(struct Gnode * anode, float radius, struct data_struct target, int *sendSize){
+void getSendSize1Target(struct Gnode * anode, float radius, struct data_struct target, int *sendSize, struct Gnode ** childArray){
   int i,j,k,  caSize = 0;
   float targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
-  struct Gnode ** childArray = (struct Gnode **)malloc(global_num_ranks*sizeof(struct Gnode *));
+  
   char fname[80];
   FILE *myfile;
   //struct Gnode * childArray[global_num_ranks];
@@ -391,7 +394,7 @@ void getSendSize1Target(struct Gnode * anode, float radius, struct data_struct t
   }
   //if (target.num == 10000000039)
   //  fclose(myfile);
-  free(childArray);
+  //free(childArray);
 }
 
 int sendSizeTest(struct node * anode, float radius, struct data_struct * targets, int numOfTargets){
@@ -504,25 +507,27 @@ void  getSendArray(struct Gnode * headnode, float radius, struct data_struct *ta
   float targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
   //int * aSize = (int *)calloc(global_num_ranks,sizeof(int));
   int aSize = 0, tsize = 0, sendi=0;
+  struct Gnode ** childArray = (struct Gnode **)malloc(global_num_ranks*sizeof(struct Gnode *));
+  
   radius = 0.1;
   //SEND SIZE WAS MADE WITH CALLOC
   for (targeti=0; targeti < numOfTargets; targeti++){
     target = &targets[targeti];
     aSize = 0;
-    getSendArray1Target(headnode, radius, *target, &aSize,sendRank);
+    getSendArray1Target(headnode, radius, *target, &aSize,sendRank,childArray);
     tsize += aSize;
     if (aSize > 0)
       sendArray[sendi++] = *target;
   }
   if (sendSize != tsize)    
     printf("rank: %d; sendSize: %d; sendi; %d\n", sendRank, sendSize, tsize);
+  free(childArray);
 }
-void getSendArray1Target(struct Gnode * anode, float radius, struct data_struct target, int *sendSize, int sendRank){
+void getSendArray1Target(struct Gnode * anode, float radius, struct data_struct target, int *sendSize, int sendRank, struct Gnode ** childArray){
   int i,j,k, count = 0, caSize = 0;
   float targetDir[3], targetPoint[3], targetMagnitude = 0, testRadius=0;//, dist = 0;
-  struct Gnode ** childArray = (struct Gnode **)malloc(global_num_ranks*sizeof(struct Gnode *));
-  char fname[80];
-  FILE *myfile;
+  //char fname[80];
+  //FILE *myfile;
   //struct Gnode * childArray[global_num_ranks];
   //sprintf(fname,"/home/gst2d/Final/TargetidsizeG%03u.txt", anode->this_rank);
   //if (target.num == 10000000039){
@@ -615,7 +620,7 @@ void getSendArray1Target(struct Gnode * anode, float radius, struct data_struct 
   }
   //if (target.num == 10000000039)
   //  fclose(myfile);
-  free(childArray);
+  //free(childArray);
 }
 
 void initAssigned(struct Gnode * headnode){

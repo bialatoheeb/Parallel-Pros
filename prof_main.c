@@ -309,12 +309,13 @@ int main(int argc, char* argv[]) {
   
   char fname[80] = "/home/gst2d/localstorage/public/coms7900-data/binary/bdatafile00501.bin";
   
-  struct data_struct* targetArray  = (struct data_struct *) malloc(targetSize * sizeof(struct data_struct));
+  struct data_struct* targetArray  = (struct data_struct *) malloc(targetSize * sizeof(struct data_struct )); 
   int * sendSize = (int *)calloc(global_num_ranks,sizeof(int));
   int mySendSize = 0;
   int totalSendSize = 0;
   struct data_struct* sendArray;//  =
-  struct data_struct* allSendArrays[global_num_ranks];
+  //struct data_struct* allSendArrays[global_num_ranks];
+  struct data_struct ** allSendArrays = (struct data_struct **) malloc(global_num_ranks * sizeof(struct data_struct *)); 
   if (timePrint == 1){
       startTime[timeIndex] = timestamp();    
     }
@@ -352,7 +353,7 @@ int main(int argc, char* argv[]) {
     }
     
   }
-  MPI_Barrier(MPI_COMM_WORLD);
+  
   //printf("my_rank: %d; num: %d\n", my_global_rank, num);
   
   if (timePrint == 1){
@@ -368,7 +369,7 @@ int main(int argc, char* argv[]) {
   }
   if (getsizeflag == 1)
     printf("GETSIZE gid%03d\n", my_global_rank);
-  
+  MPI_Barrier(MPI_COMM_WORLD);
   //========================
   //   LOCAL TREE BUILD 
   //========================
@@ -435,7 +436,7 @@ int main(int argc, char* argv[]) {
 	sendArray = (struct data_struct *) malloc(sendSize[i] * sizeof(struct data_struct)); 
 	getSendArray(&Gtree, 0.1, targetArray, targetSize, sendArray, sendSize[i], i);
 	MPI_Send(sendArray, sendSize[i], array_type, i, 0, MPI_COMM_WORLD);
-	MPI_Recv(&j, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &mystat);
+	//MPI_Recv(&j, 1, MPI_INT, i, 0, MPI_COMM_WORLD, &mystat);
 	free(sendArray);
       }
     }
@@ -452,7 +453,7 @@ int main(int argc, char* argv[]) {
       //printFile(mySendSize, sendArray);
       MPI_Recv(sendArray, mySendSize, array_type, 0, 0, MPI_COMM_WORLD, &mystat);    
       i = 1;
-      MPI_Send(&i,1,MPI_INT,0,0,MPI_COMM_WORLD);
+      //MPI_Send(&i,1,MPI_INT,0,0,MPI_COMM_WORLD);
     }
   }
   

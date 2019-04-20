@@ -107,7 +107,13 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //
   //============================
   
-  adjustL(num, colIndex, array, L, allCounts, totalCount, &balanced);
+  //adjustL(num, colIndex, array, L, allCounts, totalCount, &balanced);
+  free(nodeDivL);
+  free(totalCount);
+  free(LDivinfo);
+  free(LDiv);
+  free(L);
+  
 }
 
 //============================
@@ -364,6 +370,7 @@ void adjustL(int num,  const int colIndex, void* varray, void *vL, void *vallCou
   }
   if (Bcastflag == 1)
     printf("BCAST gid%03d\n", my_global_rank);
+  free(allSmallest);
 }
 
 void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtotalCount, void *vallCounts){
@@ -479,7 +486,7 @@ void getCounts(int num,  const int colIndex, void* varray, void *vL, void *vtota
   }
   
   
-  
+  free(nodeCount);
 }
 
 void checkBalance(void *vbalanced, void *vtotalCount){
@@ -553,5 +560,5 @@ void printCount(void *vallCounts){
     }
     printf("\n================\n\n");
   }
-
+  free(totalCount);
 }

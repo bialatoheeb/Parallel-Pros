@@ -206,6 +206,8 @@ void getMaxMinGlobal(void* varray, int size,  int colIndex, float *arrayMax, flo
       
     }
   }
+  free(allMin);
+  free(allMax);
 }
 
 
@@ -276,11 +278,13 @@ void splitRanks(){
       cflag = 1;
     }
 
-    MPI_Comm_group( MPI_LOCAL_COMM, &local_group );
-    MPI_Comm_create(MPI_LOCAL_COMM , local_group, &MPI_TEMP_COMM );
+    //MPI_Comm_group( MPI_LOCAL_COMM, &local_group );
+    //MPI_Comm_create(MPI_LOCAL_COMM , local_group, &MPI_TEMP_COMM );
+    
+    MPI_Comm_split(MPI_LOCAL_COMM , cflag, my_rank, &MPI_TEMP_COMM );
     MPI_Comm_free(&MPI_LOCAL_COMM);
-    MPI_Comm_split( MPI_TEMP_COMM, cflag, my_rank, &MPI_LOCAL_COMM );
-    MPI_Group_free(&local_group);
+    MPI_Comm_dup(MPI_TEMP_COMM, &MPI_LOCAL_COMM);
+    //MPI_Group_free(&local_group);
     MPI_Comm_free(&MPI_TEMP_COMM);
     
     MPI_Comm_size(MPI_LOCAL_COMM, &num_ranks);

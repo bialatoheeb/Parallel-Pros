@@ -1,12 +1,2 @@
 DataPoints;Nodes;readPoints;getLocalHead;buildGlobalTree;readTargets;getSendSize;buildLocalTree;sendSendSize;assignTargets;localCount;globalCount;totalTime
-1000000;128--------------------------------------------------------------------------
-ORTE has lost communication with a remote daemon.
-
-  HNP daemon   : [[57873,0],0] on node compute-0-16
-  Remote daemon: [[57873,0],3] on node compute-0-13
-
-This is usually due to either a failure of the TCP network
-connection to the node, or possibly an internal failure of
-the daemon itself. We cannot recover from this failure, and
-therefore will terminate the job.
---------------------------------------------------------------------------
+1000000;128;0.015156;0.269520;0.000005;0.003021;0.011550;0.009132;0.000091;0.009920;80.878766;0.003137;85.405300

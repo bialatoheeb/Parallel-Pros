@@ -22,5 +22,6 @@ struct data_struct * globalSort(void * varray, int *num, int colIndex, int *glob
   *globalNum = 0;
   for (i=0; i<num_ranks*num_ranks;i++)
     *globalNum+=allCounts[i];
+  free(allCounts);
   return recv_array;
 }
