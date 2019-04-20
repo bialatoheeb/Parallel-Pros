@@ -21,15 +21,15 @@ void compareFunc(struct data_struct* array, struct data_struct tarray, int num){
   }
   if (my_global_rank == 0)
     printf("%20Lu",tarray.num);
-  MPI_Reduce(&r1, &tr, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+  //MPI_Reduce(&r1, &tr, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
   if (my_global_rank == 0)
-    printf("\t%10Lu", tr);
-  MPI_Reduce(&r2, &tr, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    printf("\t%10Lu", r1);
+  //MPI_Reduce(&r2, &tr, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
   if (my_global_rank == 0)
-    printf("\t%10Lu", tr);
-  MPI_Reduce(&r3, &tr, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    printf("\t%10Lu", r2);
+  //MPI_Reduce(&r3, &tr, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
   if (my_global_rank == 0)
-    printf("\t%10Lu\n", tr);
+    printf("\t%10Lu\n", r3);
 }
 
 
@@ -52,23 +52,25 @@ void compareTargetsLocalTree(struct node *localTree, struct data_struct *tarray,
 void compareTargets(struct data_struct *array, struct data_struct *tarray, int numOfTargets, int numOfPoints){
   int i,j,k, r1=0, r2=0, r3=0, tr;
   float dist = 0.0;
+  printf("%20s\t%10s\t%10s\t%10s\n", "TargetID", "0.01", "0.05","0.1");
   for (k=0;k<numOfTargets;k++){
-    for (i=0;i<numOfPoints;i++){
-      dist = 0.0;
-      for (j=0;j<3;j++){
-	dist += (tarray[k].xyz[j]-array[i].xyz[j])*(tarray[k].xyz[j]-array[i].xyz[j]); //, 2);
-      }
-  
-      dist = sqrt(dist);
-      if (dist < 0.000001){
-	r3 += 1;
-	break;
-      }
-    }
+    compareFunc(array, tarray[k], numOfPoints);
+    //for (i=0;i<numOfPoints;i++){
+    //  dist = 0.0;
+    //  for (j=0;j<3;j++){
+    //	dist += (tarray[k].xyz[j]-array[i].xyz[j])*(tarray[k].xyz[j]-array[i].xyz[j]); //, 2);
+    //  }
+    //
+    //  dist = sqrt(dist);
+    //  if (dist < 0.000001){
+    //	r3 += 1;
+    //	break;
+    //  }
+    //}
   }
-  MPI_Reduce(&r3, &tr, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-  if (my_global_rank == 0)
-    printf("numOfTargets\t%10Lu\n", tr);
+  //MPI_Reduce(&r3, &tr, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+  //if (my_global_rank == 0)
+  //  printf("numOfTargets\t%10Lu\n", tr);
   
 }
 

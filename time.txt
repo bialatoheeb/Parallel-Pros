@@ -1,2 +1,2 @@
-DataPoints;Nodes;readPoints;getLocalHead;buildGlobalTree;readTargets;getSendSize;buildLocalTree;sendSendSize;assignTargets;localCount;globalCount;totalTime
-1000000;128;0.015156;0.269520;0.000005;0.003021;0.011550;0.009132;0.000091;0.009920;80.878766;0.003137;85.405300
+DataPoints;Nodes;Targets;readPoints;getLocalHead;buildGlobalTree;readTargets;getSendSize;buildLocalTree;sendSendSize;assignTargets;localCount;globalCount;totalTime
+100000000;128;20000000

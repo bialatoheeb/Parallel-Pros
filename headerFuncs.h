@@ -81,7 +81,7 @@ void getSendArray1Target(struct Gnode *, float, struct data_struct , int *, int,
 
 struct data_struct* globalSort(void *, int *, int, int *);
 
-int localSearch(struct node *, float, struct data_struct,struct node ** );
+void localSearch(struct node *, struct data_struct,struct node **, long int * );
 
 void getMaxMin(void*, int, int, float*, float*);
 void getLargestDimension(float *, float *, int *);
