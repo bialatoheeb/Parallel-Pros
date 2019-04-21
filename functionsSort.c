@@ -107,7 +107,7 @@ void getallCount(int num, const int colIndex, void* varray, void *vallCounts){
   //
   //============================
   
-  //adjustL(num, colIndex, array, L, allCounts, totalCount, &balanced);
+  adjustL(num, colIndex, array, L, allCounts, totalCount, &balanced);
   free(nodeDivL);
   free(totalCount);
   free(LDivinfo);

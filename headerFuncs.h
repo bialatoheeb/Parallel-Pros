@@ -77,7 +77,8 @@ void searchTest(struct data_struct *,struct data_struct*, int);
 void compareTargets(struct data_struct *, struct data_struct *, int, int);
 void compareTargetsLocalTree(struct node *, struct data_struct *, int);
 void globalTreeMaster(struct Gnode *, struct node *);
-void getSendArray1Target(struct Gnode *, float, struct data_struct , int *, int, struct Gnode **);
+void  getSendArray(struct Gnode *, float, struct data_struct *, int , struct data_struct *, int *, int);
+void getSendArray1Target(struct Gnode *, float, struct data_struct , int *, int);
 
 struct data_struct* globalSort(void *, int *, int, int *);
 
