@@ -84,24 +84,19 @@ void localSearch(struct node * anode, struct data_struct target, struct node ** 
   //	   target.xyz[0],target.xyz[1],target.xyz[2]);
   while (caSize > 0){
     anode = childArray[start];
-    //if (my_global_rank == 14 && target.num == 925)
-    //  printf("RADIUS: %f; caSize: %d, num_below: %d\n", radius, caSize, anode->num_below);
     targetMagnitude = testRadius = 0;
     if (anode->num_below > 1){
       for (i=0;i<3;i++){
 	temp = (anode->max[i] + anode->min[i])/2;
 	targetDir[i] = (target.xyz[i]-temp);
 	targetMagnitude += targetDir[i]*targetDir[i];
-      }
-      
+      }      
       targetMagnitude = sqrt(targetMagnitude);
       if (targetMagnitude < anode->maxRadius){
-	//for (i=0;i<caSize;i++)
-	//  childArray[i] = childArray[i+1];
 	caSize += 1;
 	start = (start + 1)%numOfLeaves;
 	end = (end + 1)%numOfLeaves;
-	childArray[end] = anode->left; //, radius, target, sendSize);
+	childArray[end] = anode->left; 
 	end = (end + 1)%numOfLeaves;
 	childArray[end] = anode->right;   
       }else{
@@ -113,18 +108,14 @@ void localSearch(struct node * anode, struct data_struct target, struct node ** 
 	  testRadius += pow(target.xyz[i] - targetPoint[i],2);
 	}
 	testRadius = sqrt(testRadius);
-	if (testRadius < radius){ //THIS MEAND NODE MAX RADIUS IS IN RADIUS OF TARGET
-	  //for (i=0;i<caSize;i++)
-	  //  childArray[i] = childArray[i+1];
+	if (testRadius < radius){ 
 	  caSize += 1;
 	  start = (start + 1)%numOfLeaves;
 	  end = (end + 1)%numOfLeaves;
-	  childArray[end] = anode->left; //, radius, target, sendSize);
+	  childArray[end] = anode->left;
 	  end = (end + 1)%numOfLeaves;
 	  childArray[end] = anode->right;   
 	}else{
-	  //for (i=0;i<caSize;i++)
-	  //  childArray[i] = childArray[i+1];
 	  start = (start + 1)%numOfLeaves;
 	  caSize -= 1;
 	} // BOUNDARY TO TARGET ( TEST RADIUS)
