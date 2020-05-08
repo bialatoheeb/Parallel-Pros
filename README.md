@@ -1,1 +1,1 @@
-# Parallel-Pros
+This is a joint project that deals with a data decomposition strategy to distribute a large data set consisting of coordinate points (3 coordinates) to a distributed memory system. The main goal is to show that searching for data points (within a circle centered at a given point with a given radius) is faster and more efficient than searching the whole data set. The algorithm depends on the distribution of the datapoints in the data set.
